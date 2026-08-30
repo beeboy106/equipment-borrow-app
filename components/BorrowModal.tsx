@@ -151,43 +151,7 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
             </div>
           </div>
 
-          {/* Contact Details (Email & Phone) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                อีเมลติดต่อ <span className="text-rose-500">*</span>
-              </label>
-              <div className="relative">
-                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="email"
-                  required
-                  placeholder="somchai@univ.ac.th"
-                  value={formData.borrower_email}
-                  onChange={(e) => setFormData({ ...formData, borrower_email: e.target.value })}
-                  className="w-full pl-10 pr-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition bg-white"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                เบอร์โทรศัพท์ <span className="text-rose-500">*</span>
-              </label>
-              <div className="relative">
-                <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="tel"
-                  required
-                  placeholder="081-234-5678"
-                  value={formData.borrower_phone}
-                  onChange={(e) => setFormData({ ...formData, borrower_phone: e.target.value })}
-                  className="w-full pl-10 pr-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition bg-white"
-                />
-              </div>
-            </div>
-          </div>
-
+          
           {/* Purpose */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1.5">
