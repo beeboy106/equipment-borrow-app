@@ -70,7 +70,7 @@ export default function CartDrawer({ onOpenCheckout }: CartDrawerProps) {
                 <div className="flex-1 min-w-0">
                   <h4 className="font-bold text-slate-900 text-sm truncate">{item.name}</h4>
                   <p className="text-xs text-slate-400 mt-0.5">
-                    คงเหลือในสต็อก: {item.available_quantity} ชิ้น
+                    {item.category || 'อุปกรณ์ทั่วไป'}
                   </p>
 
                   <div className="flex items-center gap-2 mt-2.5">
@@ -85,8 +85,7 @@ export default function CartDrawer({ onOpenCheckout }: CartDrawerProps) {
                     </span>
                     <button
                       onClick={() => updateQuantity(item.id, quantity + 1)}
-                      disabled={quantity >= item.available_quantity}
-                      className="p-1 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 transition disabled:opacity-40 shadow-sm"
+                      className="p-1 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 transition shadow-sm"
                     >
                       <Plus className="w-3.5 h-3.5" />
                     </button>

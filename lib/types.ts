@@ -1,3 +1,7 @@
+export type UserGroup = 'อาจารย์' | 'นักศึกษา' | 'บุคลากรภายใน';
+
+export type BorrowStatus = 'pending' | 'approved' | 'rejected' | 'returned' | 'cancelled';
+
 export interface Item {
   id: string;
   name: string;
@@ -15,41 +19,55 @@ export interface CartItem {
   quantity: number;
 }
 
-export interface BorrowItemDetail {
+export interface BorrowRequestItem {
   id: string;
-  quantity: number;
-  item: {
+  request_id?: string;
+  item_id: string;
+  requested_qty: number;
+  approved_qty?: number | null;
+  item?: {
+    id: string;
     name: string;
     image_url: string | null;
+    available_quantity?: number;
+    total_quantity?: number;
   } | null;
 }
 
-export interface BorrowRecord {
+export interface BorrowRequest {
   id: string;
+  user_id?: string | null;
   borrower_name: string;
   borrower_email: string;
-  borrower_phone: string;
+  phone: string;
+  user_group: UserGroup;
   purpose: string;
-  borrow_date: string;
-  expected_return_date: string;
-  actual_return_date: string | null;
-  status: 'borrowed' | 'returned' | 'cancelled';
+  use_date: string;
+  return_date: string;
+  pickup_time?: string | null;
+  admin_note?: string | null;
+  status: BorrowStatus;
   created_at?: string;
-  borrow_items?: BorrowItemDetail[];
+  updated_at?: string;
+  borrow_items?: BorrowRequestItem[];
 }
 
-export interface BorrowFormData {
+export interface AdvanceBorrowFormData {
   borrower_name: string;
   borrower_email: string;
-  borrower_phone: string;
+  phone: string;
+  user_group: UserGroup;
   purpose: string;
-  expected_return_date: string;
+  use_date: string;
+  return_date: string;
 }
 
 export interface StatsSummary {
   totalItems: number;
   availableItems: number;
-  activeBorrows: number;
-  returnedBorrows: number;
-  categoriesCount: number;
+  pendingRequests: number;
+  approvedRequests: number;
+  rejectedRequests: number;
+  returnedRequests: number;
+  totalRequests: number;
 }

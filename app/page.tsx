@@ -9,7 +9,10 @@ import CartDrawer from '@/components/CartDrawer';
 import BorrowModal from '@/components/BorrowModal';
 import { Search, Boxes, Sparkles, CheckCircle2, RefreshCw, X } from 'lucide-react';
 
+import { useRouter } from 'next/navigation';
+
 export default function HomePage() {
+  const router = useRouter();
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -17,11 +20,30 @@ export default function HomePage() {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
 
-  // ดึงข้อมูลรายการอุปกรณ์ และเปิด Realtime Subscription
   useEffect(() => {
-    fetchItems();
+    const checkAuthAndLoad = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-    // Realtime channel เพื่ออัปเดตสถานะคงเหลือแบบทันทีเมื่อมีการยืม/คืน
+      if (!session) {
+        router.push('/login');
+        return;
+      }
+
+      await fetchItems();
+    };
+
+    checkAuthAndLoad();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session && event === 'SIGNED_OUT') {
+        router.push('/login');
+      }
+    });
+
     const channel = supabase
       .channel('realtime_items_public')
       .on(
@@ -42,9 +64,10 @@ export default function HomePage() {
       .subscribe();
 
     return () => {
+      subscription.unsubscribe();
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [router]);
 
   const fetchItems = async () => {
     setLoading(true);
@@ -59,13 +82,11 @@ export default function HomePage() {
     setLoading(false);
   };
 
-  // หมวดหมู่ทั้งหมด
   const categories = [
     'ทั้งหมด',
     ...Array.from(new Set(items.map((i) => i.category || 'ทั่วไป'))),
   ];
 
-  // กรองตามการค้นหาและหมวดหมู่
   const filteredItems = items.filter((item) => {
     const matchSearch =
       item.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -76,24 +97,22 @@ export default function HomePage() {
   });
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
+    <div className="min-h-screen flex flex-col bg-slate-50 font-sans">
       <Navbar />
 
-      {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
         {/* Banner Title Area */}
         <div className="mb-8 bg-gradient-to-r from-indigo-900 via-indigo-800 to-indigo-950 rounded-3xl p-6 sm:p-10 text-white shadow-xl relative overflow-hidden">
           <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
           <div className="relative z-10 max-w-2xl">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/30 text-indigo-200 text-xs font-semibold mb-3 border border-indigo-400/20">
-              <Sparkles className="w-3.5 h-3.5" /> ระบบยืม-คืนอุปกรณ์ออนไลน์
+              <Sparkles className="w-3.5 h-3.5" /> ระบบยืม-คืนอุปกรณ์ออนไลน์ล่วงหน้า
             </span>
             <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight mb-2">
               บริการยืม-คืนอุปกรณ์และสื่อการสอน
             </h2>
             <p className="text-sm sm:text-base text-indigo-100/80 leading-relaxed">
-              สำหรับอาจารย์และบุคลากรในสาขาวิชา สามารถเลือกอุปกรณ์ลงตะกร้าและทำการยืมได้สะดวกรวดเร็ว
-              พร้อมตรวจสอบสต็อกคงเหลือแบบ Real-time
+              สำหรับอาจารย์ นักศึกษา และบุคลากรในสาขาวิชา สามารถเลือกอุปกรณ์ลงตะกร้าและระบุวันที่ใช้งานล่วงหน้า พร้อมรับการแจ้งผลทางอีเมล
             </p>
           </div>
         </div>

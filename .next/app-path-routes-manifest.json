@@ -1,0 +1,9 @@
+{
+  "/api/send-email/route": "/api/send-email",
+  "/_not-found/page": "/_not-found",
+  "/admin/login/page": "/admin/login",
+  "/admin/dashboard/page": "/admin/dashboard",
+  "/my-requests/page": "/my-requests",
+  "/page": "/",
+  "/login/page": "/login"
+}
