@@ -151,7 +151,7 @@ export default function HomePage() {
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 sm:w-5 sm:h-5" />
             <input
               type="text"
-              placeholder="ค้นหาชื่ออุปกรณ์ เช่น iPad, กล้อง, ไมโครโฟน..."
+              placeholder="ค้นหาชื่ออุปกรณ์ เช่น ผ้า, กล้อง, ไมโครโฟน..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-9 sm:pl-10 pr-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-xs text-xs sm:text-sm"
@@ -238,7 +238,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="border-t border-slate-200 bg-white py-6 mt-16">
         <div className="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
-          © {new Date().getFullYear()} ระบบยืม-คืนอุปกรณ์ประจำสาขาวิชา • พัฒนาด้วย Next.js, Tailwind CSS และ Supabase
+          © {new Date().getFullYear()} ระบบยืม-คืนอุปกรณ์ คณะวิทยาศาสตร์ • พัฒนาด้วย Next.js, Tailwind CSS
         </div>
       </footer>
     </div>
