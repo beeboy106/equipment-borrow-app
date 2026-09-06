@@ -58,31 +58,32 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm transition-all">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 min-h-[64px] h-auto sm:h-20 py-2.5 sm:py-0 flex items-center justify-between gap-2">
         {/* Brand Logo */}
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-200 group-hover:scale-105 transition-transform duration-300">
-            <Layers className="w-6 h-6" />
+        <Link href="/" className="flex items-center gap-2 sm:gap-3 group shrink-0">
+          <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-200 group-hover:scale-105 transition-transform duration-300 shrink-0">
+            <Layers className="w-4 h-4 sm:w-6 sm:h-6" />
           </div>
           <div>
-            <div className="font-extrabold text-slate-900 text-lg leading-tight group-hover:text-indigo-600 transition-colors">
-              ระบบยืม-คืนอุปกรณ์
+            <div className="font-extrabold text-slate-900 text-xs sm:text-lg leading-tight group-hover:text-indigo-600 transition-colors whitespace-nowrap">
+              ยืม-คืนอุปกรณ์
             </div>
-            <div className="text-xs text-slate-400 font-medium">
-              สาขาวิชาเทคโนโลยีสารสนเทศและคอมพิวเตอร์
+            <div className="text-[10px] sm:text-xs text-slate-400 font-medium whitespace-nowrap">
+              คณะวิทยาศาสตร์
             </div>
           </div>
         </Link>
 
         {/* Right Actions */}
-        <div className="flex items-center space-x-2 sm:space-x-3">
+        <div className="flex items-center gap-1 sm:gap-2.5 shrink-0">
           {/* My Requests Link (if logged in) */}
           {user && (
             <Link
               href="/my-requests"
-              className="flex items-center gap-1.5 py-2.5 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 text-slate-700 transition font-bold text-xs shadow-sm"
+              className="flex items-center gap-1.5 p-2 sm:py-2.5 sm:px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 text-slate-700 transition font-bold text-xs shadow-xs"
+              title="คำขอของฉัน"
             >
-              <Clock className="w-4 h-4 text-indigo-600" />
+              <Clock className="w-4 h-4 text-indigo-600 shrink-0" />
               <span className="hidden sm:inline">คำขอของฉัน</span>
             </Link>
           )}
@@ -90,12 +91,13 @@ export default function Navbar() {
           {/* Cart Trigger */}
           <button
             onClick={() => setIsCartOpen(true)}
-            className="relative flex items-center gap-2 py-2.5 px-4 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition font-bold text-xs border border-indigo-200/70 shadow-sm"
+            className="relative flex items-center gap-1.5 sm:gap-2 p-2 sm:py-2.5 sm:px-4 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition font-bold text-xs border border-indigo-200/70 shadow-xs"
+            title="ตะกร้าอุปกรณ์"
           >
-            <ShoppingBag className="w-4 h-4" />
+            <ShoppingBag className="w-4 h-4 shrink-0" />
             <span className="hidden sm:inline">ตะกร้า</span>
             {totalItemsCount > 0 && (
-              <span className="w-5 h-5 rounded-full bg-indigo-600 text-white text-[11px] flex items-center justify-center font-bold shadow-sm">
+              <span className="absolute -top-1 -right-1 sm:static w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-indigo-600 text-white text-[9px] sm:text-[11px] flex items-center justify-center font-bold shadow-xs">
                 {totalItemsCount}
               </span>
             )}
@@ -105,9 +107,10 @@ export default function Navbar() {
           {!loading && (
             <>
               {user ? (
-                <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
+                <div className="flex items-center gap-1 sm:gap-2 pl-1 sm:pl-2 border-l border-slate-200">
+                  {/* Desktop User Pill */}
                   <div
-                    className="flex items-center gap-2 py-1.5 px-2.5 rounded-xl bg-slate-100 text-slate-800 text-xs font-semibold max-w-[140px] sm:max-w-xs truncate"
+                    className="hidden sm:flex items-center gap-2 py-1.5 px-2.5 rounded-xl bg-slate-100 text-slate-800 text-xs font-semibold max-w-xs truncate"
                     title={user.email}
                   >
                     {user.user_metadata?.avatar_url ? (
@@ -121,13 +124,29 @@ export default function Navbar() {
                         {user.email?.charAt(0).toUpperCase()}
                       </div>
                     )}
-                    <span className="hidden md:inline truncate">
+                    <span className="truncate">
                       {user.user_metadata?.full_name || user.email}
                     </span>
                   </div>
+
+                  {/* Mobile User Avatar Only */}
+                  <div className="sm:hidden" title={user.user_metadata?.full_name || user.email}>
+                    {user.user_metadata?.avatar_url ? (
+                      <img
+                        src={user.user_metadata.avatar_url}
+                        alt="User"
+                        className="w-7 h-7 rounded-full object-cover ring-2 ring-indigo-100"
+                      />
+                    ) : (
+                      <div className="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold ring-2 ring-indigo-100">
+                        {user.email?.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+
                   <button
                     onClick={handleLogout}
-                    className="p-2 text-slate-400 hover:text-rose-600 transition rounded-xl hover:bg-rose-50"
+                    className="p-1.5 sm:p-2 text-slate-400 hover:text-rose-600 transition rounded-xl hover:bg-rose-50"
                     title="ออกจากระบบ"
                   >
                     <LogOut className="w-4 h-4" />

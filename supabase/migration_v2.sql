@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS public.borrow_requests (
     borrower_email TEXT NOT NULL,
     phone TEXT NOT NULL,
     user_group TEXT NOT NULL CHECK (user_group IN ('อาจารย์', 'นักศึกษา', 'บุคลากรภายใน')),
+    department_or_unit TEXT,
     purpose TEXT NOT NULL,
     use_date DATE NOT NULL,
     return_date DATE NOT NULL,
@@ -20,6 +21,10 @@ CREATE TABLE IF NOT EXISTS public.borrow_requests (
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+-- เพิ่มคอลัมน์ department_or_unit หากยังไม่มี
+ALTER TABLE public.borrow_requests 
+ADD COLUMN IF NOT EXISTS department_or_unit TEXT;
 
 -- 2. สร้างหรือปรับปรุงตาราง borrow_items
 CREATE TABLE IF NOT EXISTS public.borrow_items (
@@ -53,6 +58,7 @@ END $$;
 
 -- 3. Stored Procedures (ลบตัวเก่าที่ signature ซ้ำซ้อนก่อนสร้างใหม่)
 DROP FUNCTION IF EXISTS public.submit_advance_borrow_request(UUID, TEXT, TEXT, TEXT, TEXT, TEXT, DATE, DATE, JSONB);
+DROP FUNCTION IF EXISTS public.submit_advance_borrow_request(UUID, TEXT, TEXT, TEXT, TEXT, TEXT, DATE, DATE, JSONB, TEXT);
 DROP FUNCTION IF EXISTS public.approve_borrow_request(UUID, JSONB, TEXT);
 DROP FUNCTION IF EXISTS public.reject_borrow_request(UUID, TEXT);
 DROP FUNCTION IF EXISTS public.return_advance_borrow_request(UUID);
@@ -66,7 +72,8 @@ CREATE OR REPLACE FUNCTION public.submit_advance_borrow_request(
     p_purpose TEXT,
     p_use_date DATE,
     p_return_date DATE,
-    p_items JSONB
+    p_items JSONB,
+    p_department_or_unit TEXT DEFAULT NULL
 )
 RETURNS UUID
 LANGUAGE plpgsql
@@ -84,6 +91,7 @@ BEGIN
         borrower_email,
         phone,
         user_group,
+        department_or_unit,
         purpose,
         use_date,
         return_date,
@@ -95,6 +103,7 @@ BEGIN
         p_borrower_email,
         p_phone,
         p_user_group,
+        p_department_or_unit,
         p_purpose,
         p_use_date,
         p_return_date,
@@ -240,7 +249,7 @@ BEGIN
 END;
 $$;
 
--- 4. จัดการ RLS Policies แบบปลอดภัย (ลบก่อนสร้างใหม่เพื่อป้องกัน policy already exists)
+-- 4. จัดการ RLS Policies
 ALTER TABLE public.borrow_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.borrow_items ENABLE ROW LEVEL SECURITY;
 

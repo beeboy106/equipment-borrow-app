@@ -5,13 +5,46 @@ import { useCart } from '@/context/CartContext';
 import { supabase } from '@/lib/supabase/client';
 import { AdvanceBorrowFormData, UserGroup } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
-import { X, User, Phone, Calendar, AlertCircle, Package, LogIn, CheckCircle2 } from 'lucide-react';
+import {
+  X,
+  User,
+  Phone,
+  Calendar,
+  AlertCircle,
+  Package,
+  LogIn,
+  School,
+  Building2,
+  ChevronDown,
+} from 'lucide-react';
 
 interface BorrowModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: (message: string) => void;
 }
+
+const DEPARTMENT_OPTIONS = [
+  'วิทยาศาสตร์กายภาพ',
+  'วิทยาศาสตร์ชีวภาพ',
+  'วิทยาศาสตร์การคำนวณ',
+  'วิทยาศาสตร์สุขภาพและวิทยาศาสตร์ประยุกต์',
+];
+
+const UNIT_OPTIONS = [
+  'งานสนับสนุนการจัดการศึกษา',
+  'งานสนับสนุนการวิจัย',
+  'งานสนับสนุนการบริการวิชาการ',
+  'งานพัฒนานักศึกษาและศิษย์เก่าสัมพันธ์',
+  'งานสนับสนุนข้อมูลสารสนเทศและเทคโนโลยี',
+  'งานเครือข่ายและประชาสัมพันธ์ (หน่วยวิเทศสัมพันธ์)',
+  'งานเครือข่ายและประชาสัมพันธ์ (หน่วยประชาสัมพันธ์)',
+  'งานบริหารทรัพยากรมนุษย์',
+  'งานบริการกลาง',
+  'งานสนับสนุนด้านกายภาพและสิ่งแวดล้อม',
+  'งานพัสดุ',
+  'งานการเงินและบัญชี',
+];
 
 export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalProps) {
   const { cart, clearCart, totalItemsCount } = useCart();
@@ -24,6 +57,7 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
     borrower_email: '',
     phone: '',
     user_group: 'อาจารย์',
+    department_or_unit: '',
     purpose: '',
     use_date: '',
     return_date: '',
@@ -63,6 +97,15 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
     });
   };
 
+  // รีเซ็ตค่าภาควิชา/หน่วยงานเมื่อเปลี่ยนกลุ่มผู้ใช้งาน
+  const handleUserGroupChange = (grp: UserGroup) => {
+    setFormData((prev) => ({
+      ...prev,
+      user_group: grp,
+      department_or_unit: '',
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
@@ -72,6 +115,16 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
 
     if (cart.length === 0) {
       setErrorMessage('กรุณาเลือกอุปกรณ์ในตะกร้าอย่างน้อย 1 ชิ้น');
+      return;
+    }
+
+    // Validate สังกัด (Required)
+    if (!formData.department_or_unit.trim()) {
+      setErrorMessage(
+        formData.user_group === 'บุคลากรภายใน'
+          ? 'กรุณาระบุหรือเลือกหน่วยงานของคุณ'
+          : 'กรุณาระบุหรือเลือกภาควิชาของคุณ'
+      );
       return;
     }
 
@@ -102,6 +155,7 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
           p_use_date: formData.use_date,
           p_return_date: formData.return_date,
           p_items: itemsPayload,
+          p_department_or_unit: formData.department_or_unit,
         }
       );
 
@@ -109,16 +163,19 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
         throw dbError;
       }
 
-      // 2. เรียกส่งอีเมลแจ้งเตือนผ่าน Resend API
+      // 2. เรียกส่งอีเมลแจ้งเตือนไปยังผู้ดูแลระบบ (Admin)
       try {
         await fetch('/api/send-email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            type: 'submitted',
-            to: formData.borrower_email,
-            borrowerName: formData.borrower_name,
             requestId: requestId || 'REQ-' + Date.now(),
+            borrowerName: formData.borrower_name,
+            borrowerEmail: formData.borrower_email,
+            phone: formData.phone,
+            userGroup: formData.user_group,
+            departmentOrUnit: formData.department_or_unit,
+            purpose: formData.purpose,
             useDate: formatDate(formData.use_date),
             returnDate: formatDate(formData.return_date),
             items: cart.map((c) => ({
@@ -128,15 +185,13 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
           }),
         });
       } catch (emailErr) {
-        console.warn('Failed to send email:', emailErr);
+        console.warn('Failed to notify admin via email:', emailErr);
       }
 
       clearCart();
       onClose();
       onSuccess(
-        'ส่งคำขอยืมอุปกรณ์ล่วงหน้าเรียบร้อยแล้ว! ระบบได้ส่งอีเมลยืนยันไปยัง ' +
-          formData.borrower_email +
-          ' แล้ว'
+        'ส่งคำขอยืมอุปกรณ์ล่วงหน้าเรียบร้อยแล้ว! คุณสามารถติดตามสถานะการพิจารณาได้ผ่านเมนู "คำขอของฉัน"'
       );
     } catch (err: any) {
       console.error('Borrow submit error:', err);
@@ -151,19 +206,19 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
   const todayStr = new Date().toISOString().split('T')[0];
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto font-sans">
-      <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl animate-in zoom-in-95 duration-200 my-8">
+    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto font-sans">
+      <div className="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full p-4 sm:p-7 shadow-2xl animate-in zoom-in-95 duration-200 my-auto sm:my-8">
         {/* Header */}
-        <div className="flex justify-between items-center mb-5 pb-3 border-b border-slate-100">
+        <div className="flex justify-between items-center mb-4 sm:mb-5 pb-2.5 sm:pb-3 border-b border-slate-100">
           <div>
-            <h3 className="font-bold text-lg text-slate-900">ฟอร์มยืนยันการยืมอุปกรณ์</h3>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <h3 className="font-bold text-base sm:text-lg text-slate-900">ฟอร์มยืนยันการยืมอุปกรณ์</h3>
+            <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
               กรุณากรอกข้อมูลผู้ยืมและกำหนดวันส่งคืนอุปกรณ์
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition"
+            className="p-1.5 sm:p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition"
           >
             <X className="w-5 h-5" />
           </button>
@@ -175,7 +230,7 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
             <LogIn className="w-10 h-10 text-indigo-500 mx-auto mb-3" />
             <h4 className="text-sm font-bold text-slate-800">กรุณาเข้าสู่ระบบก่อนทำรายการ</h4>
             <p className="text-xs text-slate-500 mt-1 mb-5 max-w-xs mx-auto">
-              ระบบจำเป็นต้องใช้อีเมล Google ของคุณเพื่อผูกกับคำขอและส่งอีเมลแจ้งผลการอนุมัติ
+              ระบบจำเป็นต้องใช้อีเมล Google ของคุณเพื่อผูกกับข้อมูลคำขอและตรวจสอบประวัติในหน้า &quot;คำขอของฉัน&quot;
             </p>
             <button
               type="button"
@@ -227,7 +282,7 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
                 <input
                   type="text"
                   required
-                  placeholder="เช่น ผศ.ดร. สมชาย ใจดี / นายณัฐวุฒิ จึงรุ่งเรืองกิจ"
+                  placeholder="เช่น ผศ.ดร. สมชาย ใจดี / นายณัฐวุฒิ พงศาวสีกุล"
                   value={formData.borrower_name}
                   onChange={(e) => setFormData({ ...formData, borrower_name: e.target.value })}
                   className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -235,7 +290,7 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
               </div>
             </div>
 
-            {/* 2. Phone & User Group */}
+            {/* 2. Phone & Email */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
@@ -272,13 +327,13 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
                 กลุ่มผู้ใช้งาน <span className="text-rose-500">*</span>
               </label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                 {(['อาจารย์', 'นักศึกษา', 'บุคลากรภายใน'] as UserGroup[]).map((grp) => (
                   <label
                     key={grp}
-                    className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl border text-xs font-semibold cursor-pointer transition ${
+                    className={`flex items-center justify-center py-2 px-1 rounded-xl border text-[11px] sm:text-xs font-semibold cursor-pointer transition text-center whitespace-nowrap ${
                       formData.user_group === grp
-                        ? 'border-indigo-600 bg-indigo-50 text-indigo-700 shadow-sm'
+                        ? 'border-indigo-600 bg-indigo-50 text-indigo-700 shadow-xs ring-1 ring-indigo-500'
                         : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
                     }`}
                   >
@@ -287,7 +342,7 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
                       name="user_group"
                       value={grp}
                       checked={formData.user_group === grp}
-                      onChange={() => setFormData({ ...formData, user_group: grp })}
+                      onChange={() => handleUserGroupChange(grp)}
                       className="hidden"
                     />
                     <span>{grp}</span>
@@ -296,7 +351,72 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
               </div>
             </div>
 
-            {/* 4. Purpose */}
+            {/* 4. Conditional Sub-options: ภาควิชา หรือ หน่วยงาน */}
+            <div className="p-3.5 bg-indigo-50/40 rounded-2xl border border-indigo-100 animate-in fade-in-50 slide-in-from-top-1 duration-200">
+              {formData.user_group === 'บุคลากรภายใน' ? (
+                // กรณีเลือก "บุคลากรภายใน" -> หน่วยงาน (Select Dropdown)
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
+                    <Building2 className="w-3.5 h-3.5 text-indigo-600" />
+                    หน่วยงาน <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <select
+                      required
+                      value={formData.department_or_unit}
+                      onChange={(e) =>
+                        setFormData({ ...formData, department_or_unit: e.target.value })
+                      }
+                      className="w-full pl-3 pr-8 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none text-slate-800 font-medium"
+                    >
+                      <option value="" disabled>
+                        -- กรุณาเลือกหน่วยงาน --
+                      </option>
+                      {UNIT_OPTIONS.map((unit) => (
+                        <option key={unit} value={unit}>
+                          {unit}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
+                </div>
+              ) : (
+                // กรณีเลือก "อาจารย์" หรือ "นักศึกษา" -> ภาควิชา (Radio Buttons Grid)
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
+                    <School className="w-3.5 h-3.5 text-indigo-600" />
+                    ภาควิชา <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {DEPARTMENT_OPTIONS.map((dept) => (
+                      <label
+                        key={dept}
+                        className={`flex items-center gap-2 p-2.5 rounded-xl border text-xs font-medium cursor-pointer transition ${
+                          formData.department_or_unit === dept
+                            ? 'border-indigo-600 bg-white text-indigo-700 shadow-sm ring-1 ring-indigo-600 font-semibold'
+                            : 'border-slate-200 bg-white/80 text-slate-700 hover:bg-white'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="department_or_unit"
+                          value={dept}
+                          checked={formData.department_or_unit === dept}
+                          onChange={() =>
+                            setFormData({ ...formData, department_or_unit: dept })
+                          }
+                          className="w-3.5 h-3.5 text-indigo-600 focus:ring-indigo-500 border-slate-300"
+                        />
+                        <span className="truncate">{dept}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 5. Purpose */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
                 วัตถุประสงค์ในการยืม <span className="text-rose-500">*</span>
@@ -311,7 +431,7 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
               />
             </div>
 
-            {/* 5. Dates: use_date & return_date */}
+            {/* 6. Dates: use_date & return_date */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">

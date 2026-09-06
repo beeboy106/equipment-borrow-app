@@ -55,10 +55,10 @@ export default function CartDrawer({ onOpenCheckout }: CartDrawerProps) {
             cart.map(({ item, quantity }) => (
               <div
                 key={item.id}
-                className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex items-center gap-3.5 hover:border-slate-300 transition"
+                className="p-3 sm:p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex items-center gap-3 sm:gap-3.5 hover:border-slate-300 transition"
               >
                 {/* Item Thumbnail */}
-                <div className="w-16 h-16 bg-white rounded-xl border border-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white rounded-xl border border-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
                   {item.image_url ? (
                     <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
                   ) : (
@@ -68,26 +68,26 @@ export default function CartDrawer({ onOpenCheckout }: CartDrawerProps) {
 
                 {/* Info & Quantity controls */}
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-bold text-slate-900 text-sm truncate">{item.name}</h4>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <h4 className="font-bold text-slate-900 text-xs sm:text-sm truncate">{item.name}</h4>
+                  <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
                     {item.category || 'อุปกรณ์ทั่วไป'}
                   </p>
 
-                  <div className="flex items-center gap-2 mt-2.5">
+                  <div className="flex items-center gap-2 mt-2">
                     <button
                       onClick={() => updateQuantity(item.id, quantity - 1)}
-                      className="p-1 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 transition shadow-sm"
+                      className="p-1 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 transition shadow-xs"
                     >
-                      <Minus className="w-3.5 h-3.5" />
+                      <Minus className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                     </button>
                     <span className="text-xs font-bold text-slate-800 w-6 text-center">
                       {quantity}
                     </span>
                     <button
                       onClick={() => updateQuantity(item.id, quantity + 1)}
-                      className="p-1 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 transition shadow-sm"
+                      className="p-1 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 transition shadow-xs"
                     >
-                      <Plus className="w-3.5 h-3.5" />
+                      <Plus className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                     </button>
                   </div>
                 </div>
@@ -95,7 +95,7 @@ export default function CartDrawer({ onOpenCheckout }: CartDrawerProps) {
                 {/* Remove button */}
                 <button
                   onClick={() => removeFromCart(item.id)}
-                  className="text-rose-500 hover:text-rose-700 hover:bg-rose-50 p-2 rounded-xl transition"
+                  className="text-rose-500 hover:text-rose-700 hover:bg-rose-50 p-1.5 sm:p-2 rounded-xl transition"
                   title="ลบออกจากตะกร้า"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -107,16 +107,16 @@ export default function CartDrawer({ onOpenCheckout }: CartDrawerProps) {
 
         {/* Footer Actions */}
         {cart.length > 0 && (
-          <div className="p-4 sm:p-5 border-t border-slate-200 bg-slate-50 space-y-3">
-            <div className="flex justify-between items-center text-sm font-semibold">
+          <div className="p-3.5 sm:p-5 border-t border-slate-200 bg-slate-50 space-y-2.5 sm:space-y-3">
+            <div className="flex justify-between items-center text-xs sm:text-sm font-semibold">
               <span className="text-slate-600">จำนวนที่ขอยืมทั้งหมด</span>
-              <span className="text-indigo-600 text-base font-bold">{totalItemsCount} ชิ้น</span>
+              <span className="text-indigo-600 text-sm sm:text-base font-bold">{totalItemsCount} ชิ้น</span>
             </div>
 
             <div className="flex gap-2">
               <button
                 onClick={clearCart}
-                className="py-3 px-4 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-200 text-xs font-bold transition"
+                className="py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-200 text-xs font-bold transition whitespace-nowrap"
               >
                 ล้างตะกร้า
               </button>
@@ -125,10 +125,10 @@ export default function CartDrawer({ onOpenCheckout }: CartDrawerProps) {
                   setIsCartOpen(false);
                   onOpenCheckout();
                 }}
-                className="flex-1 py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm shadow-md shadow-indigo-200 transition flex items-center justify-center gap-2"
+                className="flex-1 py-2.5 sm:py-3 px-3 sm:px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs sm:text-sm shadow-md shadow-indigo-200 transition flex items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap"
               >
                 <span>กรอกข้อมูลยืนยันการยืม</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
             </div>
           </div>

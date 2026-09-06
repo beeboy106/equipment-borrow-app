@@ -61,29 +61,6 @@ export default function ApprovalModal({
 
       if (dbError) throw dbError;
 
-      // 2. เรียกส่งอีเมลแจ้งผลผ่าน Resend API
-      try {
-        await fetch('/api/send-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            type: 'approved',
-            to: request.borrower_email,
-            borrowerName: request.borrower_name,
-            requestId: request.id,
-            useDate: formatDate(request.use_date),
-            returnDate: formatDate(request.return_date),
-            items: request.borrow_items?.map((bi) => ({
-              name: bi.item?.name || 'อุปกรณ์',
-              requested_qty: bi.requested_qty,
-              approved_qty: approvedQuantities[bi.item_id] ?? bi.requested_qty,
-            })),
-          }),
-        });
-      } catch (mailErr) {
-        console.warn('Resend mail error:', mailErr);
-      }
-
       onSuccess();
       onClose();
     } catch (err: any) {
@@ -108,39 +85,16 @@ export default function ApprovalModal({
       // 1. เรียกใช้งาน RPC: reject_borrow_request
       const { error: dbError } = await supabase.rpc('reject_borrow_request', {
         p_request_id: request.id,
-        p_admin_note: adminNote,
+        p_admin_note: adminNote.trim(),
       });
 
       if (dbError) throw dbError;
-
-      // 2. เรียกส่งอีเมลแจ้งผลการปฏิเสธผ่าน Resend API
-      try {
-        await fetch('/api/send-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            type: 'rejected',
-            to: request.borrower_email,
-            borrowerName: request.borrower_name,
-            requestId: request.id,
-            useDate: formatDate(request.use_date),
-            returnDate: formatDate(request.return_date),
-            items: request.borrow_items?.map((bi) => ({
-              name: bi.item?.name || 'อุปกรณ์',
-              requested_qty: bi.requested_qty,
-            })),
-            adminNote,
-          }),
-        });
-      } catch (mailErr) {
-        console.warn('Resend mail error:', mailErr);
-      }
 
       onSuccess();
       onClose();
     } catch (err: any) {
       console.error('Reject error:', err);
-      setErrorMsg(err.message || 'เกิดข้อผิดพลาดในการปฏิเสธคำขอ');
+      setErrorMsg(err.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');
     } finally {
       setSubmitting(false);
     }
@@ -148,7 +102,7 @@ export default function ApprovalModal({
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto font-sans">
-      <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl animate-in zoom-in-95 duration-200 border border-slate-100">
+      <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl animate-in zoom-in-95 duration-200 border border-slate-100 my-8">
         {/* Header */}
         <div className="flex justify-between items-start mb-5 pb-3 border-b border-slate-100">
           <div>
@@ -158,7 +112,11 @@ export default function ApprovalModal({
                 : 'ปฏิเสธคำขอยืมอุปกรณ์ (ไม่อนุมัติ)'}
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
-              ผู้ขอยืม: <strong className="text-slate-800">{request.borrower_name}</strong> ({request.user_group})
+              ผู้ขอยืม: <strong className="text-slate-800">{request.borrower_name}</strong>{' '}
+              <span className="text-slate-600 font-medium">
+                ({request.user_group}
+                {request.department_or_unit ? ` - ${request.department_or_unit}` : ''})
+              </span>
             </p>
           </div>
           <button
@@ -238,8 +196,8 @@ export default function ApprovalModal({
               </div>
             </div>
 
-            <div className="text-[11px] bg-amber-50 p-3 rounded-xl border border-amber-200 text-amber-800">
-              * เมื่อกดยืนยัน ระบบจะตัดสต็อกตามจำนวนที่อนุมัติจริง และส่งอีเมลแจ้งผลไปยัง <strong>{request.borrower_email}</strong> ทันที
+            <div className="text-[11px] bg-indigo-50 p-3 rounded-xl border border-indigo-200 text-indigo-800">
+              * เมื่อกดยืนยัน ระบบจะตัดสต็อกตามจำนวนที่อนุมัติจริง โดยผู้ยืมจะสามารถตรวจสอบผลการอนุมัติผ่านเมนู &quot;คำขอของฉัน&quot; บนหน้าเว็บ
             </div>
 
             {/* Actions */}
@@ -279,7 +237,7 @@ export default function ApprovalModal({
             </div>
 
             <div className="text-[11px] bg-rose-50 p-3 rounded-xl border border-rose-200 text-rose-800">
-              * ระบบจะส่งอีเมลแจ้งผลการปฏิเสธพร้อมเหตุผลนี้ไปยัง <strong>{request.borrower_email}</strong>
+              * บันทึกเหตุผลการไม่อนุมัติลงในระบบ โดยผู้ยืมจะเห็นเหตุผลนี้ผ่านเมนู &quot;คำขอของฉัน&quot; บนหน้าเว็บ
             </div>
 
             {/* Actions */}

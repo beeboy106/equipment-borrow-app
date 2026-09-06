@@ -41,6 +41,7 @@ export interface BorrowRequest {
   borrower_email: string;
   phone: string;
   user_group: UserGroup;
+  department_or_unit?: string | null;
   purpose: string;
   use_date: string;
   return_date: string;
@@ -57,6 +58,7 @@ export interface AdvanceBorrowFormData {
   borrower_email: string;
   phone: string;
   user_group: UserGroup;
+  department_or_unit: string;
   purpose: string;
   use_date: string;
   return_date: string;

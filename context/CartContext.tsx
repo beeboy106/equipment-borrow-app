@@ -13,6 +13,8 @@ interface CartContextType {
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
   totalItemsCount: number;
+  toastMessage: string | null;
+  showToast: (msg: string) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -21,6 +23,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string>('guest');
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // ตรวจจับและแยกตะกร้าสินค้าตาม User ID เพื่อไม่ให้ตะกร้าของแต่ละบัญชีปะปนกัน
   useEffect(() => {
@@ -70,6 +73,19 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [cart, currentUserId]);
 
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+  };
+
+  useEffect(() => {
+    if (toastMessage) {
+      const timer = setTimeout(() => {
+        setToastMessage(null);
+      }, 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [toastMessage]);
+
   const addToCart = (item: Item, quantity: number = 1) => {
     setCart((prev) => {
       const existing = prev.find((i) => i.item.id === item.id);
@@ -79,7 +95,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
       }
       return [...prev, { item, quantity: Math.max(1, quantity) }];
     });
-    setIsCartOpen(true);
+    showToast(`เพิ่ม "${item.name}" ลงในตะกร้าแล้ว`);
   };
 
   const removeFromCart = (itemId: string) => {
@@ -124,6 +140,8 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         isCartOpen,
         setIsCartOpen,
         totalItemsCount,
+        toastMessage,
+        showToast,
       }}
     >
       {children}
