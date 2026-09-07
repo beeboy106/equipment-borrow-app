@@ -21,18 +21,31 @@ export async function POST(req: Request) {
       process.env.ADMIN_EMAIL ||
       adminNotificationEmail;
 
+    // ตรวจสอบและสร้าง URL สำหรับลิงก์เข้าสู่หน้า Admin Dashboard
+    const origin =
+      req.headers.get('origin') ||
+      (req.headers.get('x-forwarded-proto') && req.headers.get('x-forwarded-host')
+        ? `${req.headers.get('x-forwarded-proto')}://${req.headers.get('x-forwarded-host')}`
+        : null) ||
+      (req.headers.get('host') ? `https://${req.headers.get('host')}` : null) ||
+      process.env.NEXT_PUBLIC_APP_URL ||
+      'http://localhost:3000';
+
+    const adminUrl = body.adminUrl || `${origin}/admin/dashboard`;
+
     if (!resend) {
       console.warn('RESEND_API_KEY is not configured. Skipping email delivery.');
       return NextResponse.json(
         {
           message: 'RESEND_API_KEY not configured, email simulated successfully',
           sentTo: targetAdminEmail,
+          adminUrl,
         },
         { status: 200 }
       );
     }
 
-    const { subject, html } = generateAdminEmailHtml(body);
+    const { subject, html } = generateAdminEmailHtml({ ...body, adminUrl });
 
     const { data, error } = await resend.emails.send({
       from: `EQUIPMENT BORROW <${fromEmail}>`,

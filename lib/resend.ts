@@ -23,6 +23,7 @@ export interface AdminNotificationPayload {
   useDate: string;
   returnDate: string;
   items: EmailItemDetail[];
+  adminUrl?: string;
 }
 
 export function generateAdminEmailHtml(payload: AdminNotificationPayload): { subject: string; html: string } {
@@ -37,6 +38,7 @@ export function generateAdminEmailHtml(payload: AdminNotificationPayload): { sub
     returnDate,
     purpose,
     items,
+    adminUrl = 'http://localhost:3000/admin/dashboard',
   } = payload;
 
   const shortId = requestId.substring(0, 8).toUpperCase();
@@ -141,6 +143,20 @@ export function generateAdminEmailHtml(payload: AdminNotificationPayload): { sub
                 ${itemsListHtml}
               </tbody>
             </table>
+
+            <!-- Action Button & Link for Admin -->
+            <div style="margin: 28px 0; text-align: center; background-color: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 22px 16px;">
+              <p style="margin: 0 0 14px 0; font-size: 13px; font-weight: 600; color: #334155;">
+                คลิกปุ่มด้านล่างเพื่อเข้าสู่ระบบและพิจารณาอนุมัติคำขอ:
+              </p>
+              <a href="${adminUrl}" target="_blank" style="display: inline-block; background-color: #4f46e5; color: #ffffff; font-weight: 700; font-size: 14px; padding: 12px 28px; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.25);">
+                เข้าสู่หน้าจัดการระบบ (Admin Dashboard) &rarr;
+              </a>
+              <div style="margin-top: 14px; font-size: 11px; color: #64748b; line-height: 1.6; word-break: break-all;">
+                หรือเปิดผ่านลิงก์นี้:<br />
+                <a href="${adminUrl}" target="_blank" style="color: #4f46e5; text-decoration: underline;">${adminUrl}</a>
+              </div>
+            </div>
 
             <!-- Note about user checking via web -->
             <div style="padding: 12px 16px; background-color: #f1f5f9; border-radius: 8px; font-size: 12px; color: #64748b; margin-bottom: 20px;">

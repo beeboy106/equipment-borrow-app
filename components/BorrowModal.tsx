@@ -182,6 +182,7 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
               name: c.item.name,
               requested_qty: c.quantity,
             })),
+            adminUrl: `${window.location.origin}/admin/dashboard`,
           }),
         });
       } catch (emailErr) {
