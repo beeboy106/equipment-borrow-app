@@ -1,7 +1,13 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { supabase } from '@/lib/supabase/client';
+import { subscribeAuth, logoutUser } from '@/lib/firebase/authService';
+import {
+  fetchItems as getItemsFromFirestore,
+  fetchBorrowRequests as getRequestsFromFirestore,
+  returnBorrowRequestTransaction,
+  deleteItem as deleteItemFromFirestore,
+} from '@/lib/firebase/firestoreService';
 import { useRouter } from 'next/navigation';
 import { Item, BorrowRequest, StatsSummary } from '@/lib/types';
 import { formatDate, formatDateTime, exportToCSV } from '@/lib/utils';
@@ -107,20 +113,16 @@ export default function AdminDashboardPage() {
   const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
 
   useEffect(() => {
-    const checkAdminAuth = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) {
+    const unsubscribe = subscribeAuth(async (user) => {
+      if (!user) {
         router.push('/admin/login');
         return;
       }
 
-      // ตรวจสอบว่าต้องเป็นบัญชีที่ Login ด้วย Email & Password ที่สร้างไว้ใน Supabase เท่านั้น
+      // ตรวจสอบว่าต้องเป็นบัญชีที่ Login ด้วย Email & Password ที่สร้างไว้ใน Firebase Auth เท่านั้น
       const isEmailProvider =
-        session.user.app_metadata?.provider === 'email' ||
-        session.user.identities?.some((id) => id.provider === 'email');
+        user.providerData.some((p) => p.providerId === 'password') ||
+        Boolean(user.email && !user.providerData.some((p) => p.providerId === 'google.com'));
 
       if (!isEmailProvider) {
         setAuthError(
@@ -131,20 +133,10 @@ export default function AdminDashboardPage() {
       }
 
       await loadAllData();
-    };
-
-    checkAdminAuth();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!session && event === 'SIGNED_OUT') {
-        router.push('/admin/login');
-      }
     });
 
     return () => {
-      subscription.unsubscribe();
+      unsubscribe();
     };
   }, [router]);
 
@@ -155,24 +147,20 @@ export default function AdminDashboardPage() {
   };
 
   const fetchItems = async () => {
-    const { data, error } = await supabase
-      .from('items')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (!error && data) {
+    try {
+      const data = await getItemsFromFirestore();
       setItems(data);
+    } catch (err) {
+      console.error('Error fetching items:', err);
     }
   };
 
   const fetchRequests = async () => {
-    const { data, error } = await supabase
-      .from('borrow_requests')
-      .select('*, borrow_items(id, item_id, requested_qty, approved_qty, item:items(name, image_url, available_quantity))')
-      .order('created_at', { ascending: false });
-
-    if (!error && data) {
-      setRequests(data as BorrowRequest[]);
+    try {
+      const data = await getRequestsFromFirestore();
+      setRequests(data);
+    } catch (err) {
+      console.error('Error fetching requests:', err);
     }
   };
 
@@ -189,11 +177,7 @@ export default function AdminDashboardPage() {
 
     try {
       setReturnConfirmState((prev) => ({ ...prev, loading: true }));
-      const { error } = await supabase.rpc('return_advance_borrow_request', {
-        p_request_id: returnConfirmState.request.id,
-      });
-
-      if (error) throw error;
+      await returnBorrowRequestTransaction(returnConfirmState.request.id);
 
       showToast(
         'success',
@@ -222,8 +206,7 @@ export default function AdminDashboardPage() {
 
     try {
       setDeleteItemState((prev) => ({ ...prev, loading: true }));
-      const { error } = await supabase.from('items').delete().eq('id', deleteItemState.item.id);
-      if (error) throw error;
+      await deleteItemFromFirestore(deleteItemState.item.id);
 
       showToast(
         'success',
@@ -240,7 +223,7 @@ export default function AdminDashboardPage() {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await logoutUser();
     router.push('/admin/login');
   };
 

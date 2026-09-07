@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import { supabase } from '@/lib/supabase/client';
+import { subscribeAuth } from '@/lib/firebase/authService';
+import { subscribeItems } from '@/lib/firebase/firestoreService';
 import { Item } from '@/lib/types';
 import { useCartStore, selectToastMessage } from '@/lib/store/cartStore';
 import Navbar from '@/components/Navbar';
@@ -30,66 +31,25 @@ export default function HomePage() {
   const [notification, setNotification] = useState<string | null>(null);
 
   useEffect(() => {
-    const checkAuthAndLoad = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) {
-        router.push('/login');
-        return;
-      }
-
-      await fetchItems();
-    };
-
-    checkAuthAndLoad();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!session && event === 'SIGNED_OUT') {
+    // 1. Check user authentication
+    const unsubscribeAuth = subscribeAuth((user) => {
+      if (!user) {
         router.push('/login');
       }
     });
 
-    const channel = supabase
-      .channel('realtime_items_public')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'items' },
-        (payload) => {
-          if (payload.eventType === 'UPDATE') {
-            setItems((prev) =>
-              prev.map((it) => (it.id === payload.new.id ? (payload.new as Item) : it))
-            );
-          } else if (payload.eventType === 'INSERT') {
-            setItems((prev) => [payload.new as Item, ...prev]);
-          } else if (payload.eventType === 'DELETE') {
-            setItems((prev) => prev.filter((it) => it.id === payload.old.id));
-          }
-        }
-      )
-      .subscribe();
+    // 2. Real-time items listener via Cloud Firestore onSnapshot
+    setLoading(true);
+    const unsubscribeItems = subscribeItems((updatedItems) => {
+      setItems(updatedItems);
+      setLoading(false);
+    });
 
     return () => {
-      subscription.unsubscribe();
-      supabase.removeChannel(channel);
+      unsubscribeAuth();
+      unsubscribeItems();
     };
   }, [router]);
-
-  const fetchItems = async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('items')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (!error && data) {
-      setItems(data);
-    }
-    setLoading(false);
-  };
 
   const categories = useMemo(
     () => ['ทั้งหมด', ...Array.from(new Set(items.map((i) => i.category || 'ทั่วไป')))],
@@ -244,7 +204,6 @@ export default function HomePage() {
           onClose={() => setIsCheckoutOpen(false)}
           onSuccess={(msg) => {
             setNotification(msg);
-            fetchItems();
           }}
         />
       ) : null}

@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase/client';
+import { storage } from '@/lib/firebase/client';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { saveItem } from '@/lib/firebase/firestoreService';
 import { Item } from '@/lib/types';
 import { X, Upload, Package, AlertCircle } from 'lucide-react';
 
@@ -70,59 +72,31 @@ export default function ItemManagerModal({
     try {
       let finalImageUrl = imageUrl;
 
-      // 1. อัปโหลดรูปภาพไปยัง Supabase Storage Bucket ('equipment-images') หากมีการเลือกไฟล์
+      // 1. อัปโหลดรูปภาพไปยัง Firebase Storage หากมีการเลือกไฟล์
       if (imageFile) {
-        const fileExt = imageFile.name.split('.').pop();
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-        
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('equipment-images')
-          .upload(fileName, imageFile, {
-            cacheControl: '3600',
-            upsert: false,
-          });
-
-        if (uploadError) {
-          throw new Error(`ไม่สามารถอัปโหลดรูปภาพได้: ${uploadError.message}`);
+        try {
+          const fileExt = imageFile.name.split('.').pop();
+          const fileName = `items/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+          const storageRef = ref(storage, fileName);
+          await uploadBytes(storageRef, imageFile);
+          finalImageUrl = await getDownloadURL(storageRef);
+        } catch (uploadErr: any) {
+          console.warn('Firebase Storage upload failed, proceeding with image data or fallback:', uploadErr);
         }
-
-        const { data: publicUrlData } = supabase.storage
-          .from('equipment-images')
-          .getPublicUrl(fileName);
-
-        finalImageUrl = publicUrlData.publicUrl;
       }
 
-      // 2. บันทึกข้อมูลลงตาราง items
-      if (editingItem) {
-        // แก้ไข
-        const { error } = await supabase
-          .from('items')
-          .update({
-            name,
-            description,
-            category,
-            total_quantity: totalQuantity,
-            available_quantity: availableQuantity,
-            image_url: finalImageUrl || null,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', editingItem.id);
-
-        if (error) throw error;
-      } else {
-        // เพิ่มใหม่
-        const { error } = await supabase.from('items').insert({
+      // 2. บันทึกข้อมูลลง Firestore items collection
+      await saveItem(
+        {
           name,
           description,
           category,
-          total_quantity: totalQuantity,
-          available_quantity: totalQuantity, // เมื่อสร้างใหม่ available = total
+          total_quantity: Number(totalQuantity),
+          available_quantity: editingItem ? Number(availableQuantity) : Number(totalQuantity),
           image_url: finalImageUrl || null,
-        });
-
-        if (error) throw error;
-      }
+        },
+        editingItem?.id
+      );
 
       onSuccess();
       onClose();

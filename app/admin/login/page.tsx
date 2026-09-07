@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { supabase } from '@/lib/supabase/client';
+import { loginWithEmail, registerWithEmail } from '@/lib/firebase/authService';
 import { useRouter } from 'next/navigation';
 import { ShieldCheck, Mail, Lock, ArrowLeft, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
@@ -10,6 +10,7 @@ export default function AdminLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -19,21 +20,25 @@ export default function AdminLoginPage() {
     setErrorMsg(null);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        throw error;
+      if (isRegisterMode) {
+        await registerWithEmail(email, password);
+      } else {
+        await loginWithEmail(email, password);
       }
-
-      if (data.session) {
-        router.push('/admin/dashboard');
-      }
+      router.push('/admin/dashboard');
     } catch (err: any) {
-      console.error('Login error:', err);
-      setErrorMsg(err.message || 'อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+      console.error('Admin auth error:', err);
+      let msg = err.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ';
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
+        msg = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง';
+      } else if (err.code === 'auth/user-not-found') {
+        msg = 'ไม่พบบัญชีนี้ในระบบ (หากเป็นครั้งแรก สามารถสลับเป็นโหมดสร้างบัญชีแอดมินได้)';
+      } else if (err.code === 'auth/email-already-in-use') {
+        msg = 'อีเมลนี้ถูกลงทะเบียนไว้แล้ว กรุณาเข้าสู่ระบบด้วยรหัสผ่านของคุณ';
+      } else if (err.code === 'auth/weak-password') {
+        msg = 'รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร';
+      }
+      setErrorMsg(msg);
     } finally {
       setLoading(false);
     }
@@ -110,12 +115,33 @@ export default function AdminLoginPage() {
             disabled={loading}
             className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md shadow-indigo-200 transition duration-150 disabled:opacity-50 text-sm mt-3 flex items-center justify-center gap-2"
           >
-            {loading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ Admin'}
+            {loading
+              ? isRegisterMode
+                ? 'กำลังสร้างบัญชี...'
+                : 'กำลังเข้าสู่ระบบ...'
+              : isRegisterMode
+              ? 'ลงทะเบียนบัญชี Admin ใหม่'
+              : 'เข้าสู่ระบบ Admin'}
           </button>
+
+          <div className="text-center pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                setIsRegisterMode(!isRegisterMode);
+                setErrorMsg(null);
+              }}
+              className="text-xs text-indigo-600 hover:underline font-medium"
+            >
+              {isRegisterMode
+                ? 'มีบัญชีแอดมินอยู่แล้ว? คลิกเพื่อเข้าสู่ระบบ'
+                : 'ยังไม่มีบัญชีแอดมินใน Firebase? คลิกเพื่อสร้างบัญชีใหม่'}
+            </button>
+          </div>
         </form>
 
         <div className="mt-6 pt-5 border-t border-slate-100 text-center text-xs text-slate-400">
-          บัญชีผู้ดูแลระบบได้รับการจัดการผ่าน Supabase Authentication
+          บัญชีผู้ดูแลระบบได้รับการจัดการผ่าน Firebase Authentication
         </div>
       </div>
     </div>

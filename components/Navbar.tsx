@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase/client';
+import { subscribeAuth, loginWithGoogle, logoutUser } from '@/lib/firebase/authService';
 import { useCartStore, selectTotalItemsCount } from '@/lib/store/cartStore';
 import { ShoppingBag, LogIn, LogOut, Clock, Layers } from 'lucide-react';
-
+import { User } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 
 export default function Navbar() {
@@ -13,47 +13,32 @@ export default function Navbar() {
   const totalItemsCount = useCartStore(selectTotalItemsCount);
   const setIsCartOpen = useCartStore((s) => s.setIsCartOpen);
   const clearCart = useCartStore((s) => s.clearCart);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const getSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
+    const unsubscribe = subscribeAuth((currentUser) => {
+      setUser(currentUser);
       setLoading(false);
-    };
-
-    getSession();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-      if (event === 'SIGNED_OUT') {
-        clearCart();
-        router.push('/login');
-      }
     });
 
     return () => {
-      subscription.unsubscribe();
+      unsubscribe();
     };
-  }, [clearCart, router]);
+  }, []);
 
   const handleGoogleLogin = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/`,
-      },
-    });
+    try {
+      await loginWithGoogle();
+      router.push('/');
+    } catch (err) {
+      console.error('Login error:', err);
+    }
   };
 
   const handleLogout = async () => {
     clearCart();
-    await supabase.auth.signOut();
+    await logoutUser();
     setUser(null);
     router.push('/login');
   };
@@ -114,11 +99,11 @@ export default function Navbar() {
                   {/* Desktop User Pill */}
                   <div
                     className="hidden sm:flex items-center gap-2 py-1.5 px-2.5 rounded-xl bg-slate-100 text-slate-800 text-xs font-semibold max-w-xs truncate"
-                    title={user.email}
+                    title={user.email || undefined}
                   >
-                    {user.user_metadata?.avatar_url ? (
+                    {user.photoURL ? (
                       <img
-                        src={user.user_metadata.avatar_url}
+                        src={user.photoURL}
                         alt="User"
                         className="w-6 h-6 rounded-full object-cover"
                       />
@@ -128,15 +113,15 @@ export default function Navbar() {
                       </div>
                     )}
                     <span className="truncate">
-                      {user.user_metadata?.full_name || user.email}
+                      {user.displayName || user.email}
                     </span>
                   </div>
 
                   {/* Mobile User Avatar Only */}
-                  <div className="sm:hidden" title={user.user_metadata?.full_name || user.email}>
-                    {user.user_metadata?.avatar_url ? (
+                  <div className="sm:hidden" title={user.displayName || user.email || ''}>
+                    {user.photoURL ? (
                       <img
-                        src={user.user_metadata.avatar_url}
+                        src={user.photoURL}
                         alt="User"
                         className="w-7 h-7 rounded-full object-cover ring-2 ring-indigo-100"
                       />

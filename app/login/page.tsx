@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase/client';
+import { subscribeAuth, loginWithGoogle } from '@/lib/firebase/authService';
 import { useRouter } from 'next/navigation';
-import { Layers, AlertCircle, ArrowRight } from 'lucide-react';
+import { Layers, AlertCircle } from 'lucide-react';
 
 export default function UserLoginPage() {
   const router = useRouter();
@@ -12,33 +12,25 @@ export default function UserLoginPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    const checkSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (session) {
+    const unsubscribe = subscribeAuth((user) => {
+      if (user) {
         router.push('/');
       } else {
         setCheckingAuth(false);
       }
-    };
+    });
 
-    checkSession();
+    return () => {
+      unsubscribe();
+    };
   }, [router]);
 
   const handleGoogleLogin = async () => {
     setLoading(true);
     setErrorMsg(null);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/`,
-        },
-      });
-
-      if (error) throw error;
+      await loginWithGoogle();
+      router.push('/');
     } catch (err: any) {
       console.error('Google login error:', err);
       setErrorMsg(err.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย Google');
@@ -104,7 +96,7 @@ export default function UserLoginPage() {
         </div>
 
         <div className="mt-8 pt-5 border-t border-slate-100 text-center text-xs text-slate-400">
-          ระบบยืนยันตัวตนด้วย Google OAuth ผ่าน Supabase
+          ระบบยืนยันตัวตนด้วย Google OAuth ผ่าน Google Firebase
         </div>
       </div>
     </div>

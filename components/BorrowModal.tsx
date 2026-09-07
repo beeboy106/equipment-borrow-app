@@ -2,9 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { useCart } from '@/context/CartContext';
-import { supabase } from '@/lib/supabase/client';
+import { getCurrentUser, loginWithGoogle } from '@/lib/firebase/authService';
+import { submitBorrowRequest } from '@/lib/firebase/firestoreService';
 import { AdvanceBorrowFormData, UserGroup } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
+import { User as FirebaseUser } from 'firebase/auth';
 import {
   X,
   User,
@@ -50,7 +52,7 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
   const { cart, clearCart, totalItemsCount } = useCart();
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<FirebaseUser | null>(null);
 
   const [formData, setFormData] = useState<AdvanceBorrowFormData>({
     borrower_name: '',
@@ -63,38 +65,37 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
     return_date: '',
   });
 
-  // Check user session
+  // Check user session via Firebase Auth
   useEffect(() => {
-    const checkUser = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (session?.user) {
-        setUser(session.user);
+    if (isOpen) {
+      const currentUser = getCurrentUser();
+      if (currentUser) {
+        setUser(currentUser);
         setFormData((prev) => ({
           ...prev,
-          borrower_name: session.user.user_metadata?.full_name || prev.borrower_name || '',
-          borrower_email: session.user.email || '',
+          borrower_name: currentUser.displayName || prev.borrower_name || '',
+          borrower_email: currentUser.email || '',
         }));
       } else {
         setUser(null);
       }
-    };
-
-    if (isOpen) {
-      checkUser();
     }
   }, [isOpen]);
 
   if (!isOpen) return null;
 
   const handleGoogleLogin = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/`,
-      },
-    });
+    try {
+      const loggedUser = await loginWithGoogle();
+      setUser(loggedUser);
+      setFormData((prev) => ({
+        ...prev,
+        borrower_name: loggedUser.displayName || prev.borrower_name || '',
+        borrower_email: loggedUser.email || '',
+      }));
+    } catch (err) {
+      console.error('Login error in modal:', err);
+    }
   };
 
   // รีเซ็ตค่าภาควิชา/หน่วยงานเมื่อเปลี่ยนกลุ่มผู้ใช้งาน
@@ -139,29 +140,26 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
     try {
       const itemsPayload = cart.map((c) => ({
         item_id: c.item.id,
-        quantity: c.quantity,
+        requested_qty: c.quantity,
+        name: c.item.name,
+        image_url: c.item.image_url,
       }));
 
-      // 1. เรียกใช้งาน Stored Procedure: submit_advance_borrow_request
-      const { data: requestId, error: dbError } = await supabase.rpc(
-        'submit_advance_borrow_request',
+      // 1. บันทึกคำขอยืมลง Cloud Firestore
+      const requestId = await submitBorrowRequest(
         {
-          p_user_id: user.id,
-          p_borrower_name: formData.borrower_name,
-          p_borrower_email: formData.borrower_email,
-          p_phone: formData.phone,
-          p_user_group: formData.user_group,
-          p_purpose: formData.purpose,
-          p_use_date: formData.use_date,
-          p_return_date: formData.return_date,
-          p_items: itemsPayload,
-          p_department_or_unit: formData.department_or_unit,
-        }
+          user_id: user.uid,
+          borrower_name: formData.borrower_name,
+          borrower_email: formData.borrower_email,
+          phone: formData.phone,
+          user_group: formData.user_group,
+          purpose: formData.purpose,
+          use_date: formData.use_date,
+          return_date: formData.return_date,
+          department_or_unit: formData.department_or_unit,
+        },
+        itemsPayload
       );
-
-      if (dbError) {
-        throw dbError;
-      }
 
       // 2. เรียกส่งอีเมลแจ้งเตือนไปยังผู้ดูแลระบบ (Admin)
       try {

@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/lib/supabase/client';
+import { subscribeAuth, loginWithGoogle } from '@/lib/firebase/authService';
+import { fetchUserRequests, cancelBorrowRequest } from '@/lib/firebase/firestoreService';
 import { BorrowRequest } from '@/lib/types';
 import { formatDate, formatDateTime } from '@/lib/utils';
 import Navbar from '@/components/Navbar';
@@ -53,41 +54,47 @@ export default function MyRequestsPage() {
     loading: false,
   });
 
-  const fetchUserAndRequests = useCallback(async () => {
+  const loadRequestsForEmail = useCallback(async (email: string) => {
     setLoading(true);
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (!session) {
-      router.push('/login');
-      return;
+    try {
+      const data = await fetchUserRequests(email);
+      setRequests(data);
+    } catch (err) {
+      console.error('Error fetching user requests:', err);
+    } finally {
+      setLoading(false);
     }
-
-    setUser(session.user);
-    const { data, error } = await supabase
-      .from('borrow_requests')
-      .select('*, borrow_items(id, item_id, requested_qty, approved_qty, item:items(name, image_url))')
-      .eq('borrower_email', session.user.email)
-      .order('created_at', { ascending: false });
-
-    if (!error && data) {
-      setRequests(data as BorrowRequest[]);
-    }
-    setLoading(false);
-  }, [router]);
+  }, []);
 
   useEffect(() => {
-    fetchUserAndRequests();
-  }, [fetchUserAndRequests]);
+    const unsubscribe = subscribeAuth(async (currentUser) => {
+      if (!currentUser) {
+        setUser(null);
+        setRequests([]);
+        setLoading(false);
+        return;
+      }
+
+      setUser(currentUser);
+      if (currentUser.email) {
+        await loadRequestsForEmail(currentUser.email);
+      } else {
+        setLoading(false);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [loadRequestsForEmail]);
 
   const handleGoogleLogin = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/my-requests`,
-      },
-    });
+    try {
+      await loginWithGoogle();
+    } catch (err: any) {
+      console.error('Login error:', err);
+      showToast('error', err.message || 'ไม่สามารถเข้าสู่ระบบด้วย Google ได้', 'เกิดข้อผิดพลาด');
+    }
   };
 
   const handleOpenCancelModal = (request: BorrowRequest) => {
@@ -103,20 +110,13 @@ export default function MyRequestsPage() {
 
     try {
       setCancelModalState((prev) => ({ ...prev, loading: true }));
-      const { error } = await supabase
-        .from('borrow_requests')
-        .update({
-          status: 'cancelled',
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', cancelModalState.request.id)
-        .eq('status', 'pending'); // ป้องกันยกเลิกซ้ำซ้อน
-
-      if (error) throw error;
+      await cancelBorrowRequest(cancelModalState.request.id);
 
       showToast('success', 'ยกเลิกคำขอยืมอุปกรณ์เรียบร้อยแล้ว', 'ยกเลิกสำเร็จ');
       setCancelModalState({ isOpen: false, request: null, loading: false });
-      await fetchUserAndRequests();
+      if (user?.email) {
+        await loadRequestsForEmail(user.email);
+      }
     } catch (err: any) {
       console.error('Cancel request error:', err);
       showToast('error', err.message || 'ไม่สามารถยกเลิกคำขอได้', 'เกิดข้อผิดพลาด');

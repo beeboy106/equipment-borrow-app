@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase/client';
+import { approveBorrowRequestTransaction, rejectBorrowRequest } from '@/lib/firebase/firestoreService';
 import { BorrowRequest } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
 import { X, CheckCircle, XCircle, AlertCircle, Package } from 'lucide-react';
@@ -52,14 +52,8 @@ export default function ApprovalModal({
           approved_qty: approvedQuantities[bi.item_id] ?? bi.requested_qty,
         })) || [];
 
-      // 1. เรียกใช้งาน RPC: approve_borrow_request
-      const { error: dbError } = await supabase.rpc('approve_borrow_request', {
-        p_request_id: request.id,
-        p_items: itemsPayload,
-        p_pickup_time: null,
-      });
-
-      if (dbError) throw dbError;
+      // 1. เรียกใช้งาน Firestore Transaction: approveBorrowRequestTransaction
+      await approveBorrowRequestTransaction(request.id, itemsPayload, adminNote.trim() || undefined);
 
       onSuccess();
       onClose();
@@ -82,13 +76,8 @@ export default function ApprovalModal({
     setErrorMsg(null);
 
     try {
-      // 1. เรียกใช้งาน RPC: reject_borrow_request
-      const { error: dbError } = await supabase.rpc('reject_borrow_request', {
-        p_request_id: request.id,
-        p_admin_note: adminNote.trim(),
-      });
-
-      if (dbError) throw dbError;
+      // 1. เรียกใช้งาน Firestore: rejectBorrowRequest
+      await rejectBorrowRequest(request.id, adminNote.trim());
 
       onSuccess();
       onClose();

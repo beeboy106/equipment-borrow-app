@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect } from 'react';
 import { Item, CartItem } from '@/lib/types';
-import { supabase } from '@/lib/supabase/client';
+import { subscribeAuth } from '@/lib/firebase/authService';
 import {
   useCartStore,
   selectCart,
@@ -42,27 +42,15 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const showToast = useCartStore((s) => s.showToast);
   const setCurrentUserId = useCartStore((s) => s.setCurrentUserId);
 
-  // ตรวจจับและแยกตะกร้าสินค้าตาม User ID เพื่อไม่ให้ตะกร้าของแต่ละบัญชีปะปนกัน
+  // ตรวจจับและแยกตะกร้าสินค้าตาม Firebase User ID เพื่อไม่ให้ตะกร้าของแต่ละบัญชีปะปนกัน
   useEffect(() => {
-    const initAuth = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const userId = session?.user?.id || 'guest';
-      setCurrentUserId(userId);
-    };
-
-    initAuth();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      const userId = session?.user?.id || 'guest';
+    const unsubscribe = subscribeAuth((user) => {
+      const userId = user?.uid || 'guest';
       setCurrentUserId(userId);
     });
 
     return () => {
-      subscription.unsubscribe();
+      unsubscribe();
     };
   }, [setCurrentUserId]);
 
