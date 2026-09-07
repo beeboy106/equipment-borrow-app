@@ -32,6 +32,7 @@ export default function MyRequestsPage() {
   const [requests, setRequests] = useState<BorrowRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Toasts
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -69,12 +70,15 @@ export default function MyRequestsPage() {
   useEffect(() => {
     const unsubscribe = subscribeAuth(async (currentUser) => {
       if (!currentUser) {
+        setIsAuthenticated(false);
         setUser(null);
         setRequests([]);
         setLoading(false);
+        router.replace('/login');
         return;
       }
 
+      setIsAuthenticated(true);
       setUser(currentUser);
       if (currentUser.email) {
         await loadRequestsForEmail(currentUser.email);
@@ -86,7 +90,7 @@ export default function MyRequestsPage() {
     return () => {
       unsubscribe();
     };
-  }, [loadRequestsForEmail]);
+  }, [loadRequestsForEmail, router]);
 
   const handleGoogleLogin = async () => {
     try {
@@ -169,6 +173,23 @@ export default function MyRequestsPage() {
         );
     }
   };
+
+  // Zero-Flash Protection: Never render requests page UI until authentication is confirmed
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
+        <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-xl flex flex-col items-center gap-4 max-w-sm w-full text-center animate-in fade-in duration-150">
+          <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
+            <div className="w-6 h-6 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-slate-800">กำลังตรวจสอบข้อมูลผู้ใช้งาน...</h3>
+            <p className="text-xs text-slate-400 mt-1">กรุณารอสักครู่ ระบบกำลังตรวจสอบความปลอดภัย</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 font-sans">

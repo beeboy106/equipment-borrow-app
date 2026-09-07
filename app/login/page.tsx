@@ -15,7 +15,7 @@ export default function UserLoginPage() {
   useEffect(() => {
     const unsubscribe = subscribeAuth((user) => {
       if (user) {
-        router.push('/');
+        router.replace('/');
       } else {
         setCheckingAuth(false);
       }
@@ -31,7 +31,7 @@ export default function UserLoginPage() {
     setErrorMsg(null);
     try {
       await loginWithGoogle();
-      router.push('/');
+      router.replace('/');
     } catch (err: any) {
       console.error('Google login error:', err);
       if (err.code === 'auth/popup-closed-by-user') {
