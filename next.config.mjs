@@ -41,6 +41,20 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: '/login/admin',
+        destination: '/admin/login',
+        permanent: true,
+      },
+      {
+        source: '/admin',
+        destination: '/admin/dashboard',
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

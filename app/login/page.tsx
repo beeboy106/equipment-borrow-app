@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { subscribeAuth, loginWithGoogle } from '@/lib/firebase/authService';
 import { useRouter } from 'next/navigation';
-import { PackageCheck, AlertCircle } from 'lucide-react';
+import Link from 'next/link';
+import { PackageCheck, AlertCircle, ShieldCheck } from 'lucide-react';
 
 export default function UserLoginPage() {
   const router = useRouter();
@@ -104,8 +105,14 @@ export default function UserLoginPage() {
           </button>
         </div>
 
-        <div className="mt-8 pt-5 border-t border-slate-100 text-center text-xs text-slate-400">
-          ระบบยืนยันตัวตนด้วย Google OAuth ผ่าน Google Firebase
+        <div className="mt-8 pt-5 border-t border-slate-100 flex flex-col items-center gap-2.5 text-xs text-slate-400">
+          <div>ระบบยืนยันตัวตนด้วย Google OAuth ผ่าน Google Firebase</div>
+          <Link
+            href="/admin/login"
+            className="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 font-semibold hover:underline transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
+          >
+            <ShieldCheck className="w-3.5 h-3.5" /> สำหรับผู้ดูแลระบบ เข้าสู่ระบบที่นี่ (Admin Login) &rarr;
+          </Link>
         </div>
       </div>
     </div>
