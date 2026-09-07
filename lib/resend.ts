@@ -5,7 +5,7 @@ const resendApiKey = process.env.RESEND_API_KEY || '';
 export const resend = resendApiKey ? new Resend(resendApiKey) : null;
 export const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
 export const adminNotificationEmail =
-  process.env.ADMIN_NOTIFICATION_EMAIL || process.env.ADMIN_EMAIL || 'admin@equipment-borrow.local';
+  process.env.ADMIN_NOTIFICATION_EMAIL || process.env.ADMIN_EMAIL || 'thunwa02122547@gmail.com';
 
 export interface EmailItemDetail {
   name: string;
