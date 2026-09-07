@@ -39,7 +39,7 @@ export function generateAdminEmailHtml(payload: AdminNotificationPayload): { sub
     returnDate,
     purpose,
     items,
-    adminUrl = 'http://localhost:3000/admin/dashboard',
+    adminUrl = 'https://equipment-borrow-app.vercel.app/admin',
   } = payload;
 
   const shortId = requestId.substring(0, 8).toUpperCase();
@@ -60,7 +60,7 @@ export function generateAdminEmailHtml(payload: AdminNotificationPayload): { sub
   const safeAdminUrl =
     adminUrl.startsWith('https://') || adminUrl.startsWith('http://')
       ? encodeURI(adminUrl)
-      : 'http://localhost:3000/admin/dashboard';
+      : 'https://equipment-borrow-app.vercel.app/admin';
 
   const subject = `[คำขอยืมใหม่] #${safeShortId} จากคุณ ${safeBorrowerName} (${escapeHtml(userGroup)})`;
 

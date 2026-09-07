@@ -88,18 +88,20 @@ export async function POST(req: Request) {
       adminNotificationEmail;
 
     // ตรวจสอบและสร้าง URL สำหรับลิงก์เข้าสู่หน้า Admin Dashboard
+    const defaultBaseUrl = 'https://equipment-borrow-app.vercel.app';
     const origin =
-      req.headers.get('origin') ||
-      (req.headers.get('x-forwarded-proto') && req.headers.get('x-forwarded-host')
-        ? `${req.headers.get('x-forwarded-proto')}://${req.headers.get('x-forwarded-host')}`
-        : null) ||
-      (req.headers.get('host') ? `https://${req.headers.get('host')}` : null) ||
       process.env.NEXT_PUBLIC_APP_URL ||
-      'http://localhost:3000';
+      (req.headers.get('origin') && !req.headers.get('origin')?.includes('localhost')
+        ? req.headers.get('origin')
+        : null) ||
+      (req.headers.get('host') && !req.headers.get('host')?.includes('localhost')
+        ? `https://${req.headers.get('host')}`
+        : null) ||
+      defaultBaseUrl;
 
-    const adminUrl = rawBody.adminUrl && (rawBody.adminUrl.startsWith('http://') || rawBody.adminUrl.startsWith('https://'))
+    const adminUrl = rawBody.adminUrl && !rawBody.adminUrl.includes('localhost') && (rawBody.adminUrl.startsWith('http://') || rawBody.adminUrl.startsWith('https://'))
       ? rawBody.adminUrl
-      : `${origin}/admin/dashboard`;
+      : `${origin}/admin`;
 
     if (!resend) {
       console.warn('RESEND_API_KEY is not configured. Skipping email delivery.');
