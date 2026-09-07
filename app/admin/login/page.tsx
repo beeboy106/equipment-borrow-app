@@ -3,13 +3,14 @@
 import React, { useState } from 'react';
 import { loginWithEmail, registerWithEmail } from '@/lib/firebase/authService';
 import { useRouter } from 'next/navigation';
-import { ShieldCheck, Mail, Lock, ArrowLeft, AlertCircle } from 'lucide-react';
+import { ShieldCheck, Mail, Lock, ArrowLeft, AlertCircle, KeyRound } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [adminKey, setAdminKey] = useState('');
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -21,6 +22,12 @@ export default function AdminLoginPage() {
 
     try {
       if (isRegisterMode) {
+        const expectedKey = process.env.NEXT_PUBLIC_ADMIN_REGISTRATION_KEY || 'psu-admin-2026';
+        if (adminKey.trim() !== expectedKey) {
+          setErrorMsg('รหัสยืนยันสิทธิ์สร้างบัญชีผู้ดูแลระบบ (Admin Security Key) ไม่ถูกต้อง');
+          setLoading(false);
+          return;
+        }
         await registerWithEmail(email, password);
       } else {
         await loginWithEmail(email, password);
@@ -109,6 +116,28 @@ export default function AdminLoginPage() {
               />
             </div>
           </div>
+
+          {isRegisterMode ? (
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                รหัสผ่านความปลอดภัยแอดมิน (Admin Security Key)
+              </label>
+              <div className="relative">
+                <KeyRound className="w-4 h-4 text-amber-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="password"
+                  required
+                  value={adminKey}
+                  onChange={(e) => setAdminKey(e.target.value)}
+                  placeholder="กรอกรหัสยืนยันสิทธิ์สร้างแอดมิน"
+                  className="w-full pl-10 pr-3.5 py-2.5 text-sm rounded-xl border border-amber-300 focus:ring-2 focus:ring-amber-500 focus:outline-none bg-amber-50/30 transition"
+                />
+              </div>
+              <p className="text-[11px] text-slate-500 mt-1">
+                จำเป็นต้องใช้รหัสอนุญาตจากหน่วยงานเพื่อสร้างบัญชีผู้ดูแลระบบ
+              </p>
+            </div>
+          ) : null}
 
           <button
             type="submit"

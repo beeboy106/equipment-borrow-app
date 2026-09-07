@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { escapeHtml } from '@/lib/security';
 
 const resendApiKey = process.env.RESEND_API_KEY || '';
 export const resend = resendApiKey ? new Resend(resendApiKey) : null;
@@ -45,14 +46,30 @@ export function generateAdminEmailHtml(payload: AdminNotificationPayload): { sub
   const affiliationText =
     userGroup && departmentOrUnit ? `${userGroup} - ${departmentOrUnit}` : userGroup || '';
 
-  const subject = `[คำขอยืมใหม่] #${shortId} จากคุณ ${borrowerName} (${userGroup})`;
+  // Sanitize and escape all user-supplied data against HTML injection
+  const safeBorrowerName = escapeHtml(borrowerName);
+  const safeBorrowerEmail = escapeHtml(borrowerEmail);
+  const safePhone = escapeHtml(phone);
+  const safeAffiliationText = escapeHtml(affiliationText);
+  const safePurpose = escapeHtml(purpose || '-');
+  const safeUseDate = escapeHtml(useDate);
+  const safeReturnDate = escapeHtml(returnDate);
+  const safeShortId = escapeHtml(shortId);
+
+  // Validate adminUrl starts with safe protocol
+  const safeAdminUrl =
+    adminUrl.startsWith('https://') || adminUrl.startsWith('http://')
+      ? encodeURI(adminUrl)
+      : 'http://localhost:3000/admin/dashboard';
+
+  const subject = `[คำขอยืมใหม่] #${safeShortId} จากคุณ ${safeBorrowerName} (${escapeHtml(userGroup)})`;
 
   const itemsListHtml = items
     .map(
       (i) => `
       <tr style="border-bottom: 1px solid #f1f5f9;">
-        <td style="padding: 10px 12px; color: #1e293b; font-weight: 600; font-size: 13px;">${i.name}</td>
-        <td style="padding: 10px 12px; color: #4338ca; font-weight: 700; text-align: right; font-size: 13px;">${i.requested_qty} ชิ้น</td>
+        <td style="padding: 10px 12px; color: #1e293b; font-weight: 600; font-size: 13px;">${escapeHtml(i.name)}</td>
+        <td style="padding: 10px 12px; color: #4338ca; font-weight: 700; text-align: right; font-size: 13px;">${Math.max(1, Number(i.requested_qty) || 1)} ชิ้น</td>
       </tr>
     `
     )
@@ -78,7 +95,7 @@ export function generateAdminEmailHtml(payload: AdminNotificationPayload): { sub
             </h1>
             <div style="margin-top: 10px;">
               <span style="display: inline-block; background-color: #ffffff; padding: 4px 12px; border-radius: 8px; font-size: 13px; color: #3730a3; font-weight: 700; border: 1px solid #c7d2fe;">
-                รหัสคำขอ: #${shortId}
+                รหัสคำขอ: #${safeShortId}
               </span>
             </div>
           </div>
@@ -97,23 +114,23 @@ export function generateAdminEmailHtml(payload: AdminNotificationPayload): { sub
               <table style="width: 100%; font-size: 13px; border-collapse: collapse;">
                 <tr>
                   <td style="padding: 4px 0; color: #64748b; width: 140px;">ชื่อ-นามสกุล:</td>
-                  <td style="padding: 4px 0; color: #0f172a; font-weight: 600;">${borrowerName}</td>
+                  <td style="padding: 4px 0; color: #0f172a; font-weight: 600;">${safeBorrowerName}</td>
                 </tr>
                 <tr>
                   <td style="padding: 4px 0; color: #64748b;">กลุ่มผู้ใช้งาน / สังกัด:</td>
-                  <td style="padding: 4px 0; color: #0f172a; font-weight: 600;">${affiliationText}</td>
+                  <td style="padding: 4px 0; color: #0f172a; font-weight: 600;">${safeAffiliationText}</td>
                 </tr>
                 <tr>
                   <td style="padding: 4px 0; color: #64748b;">อีเมล:</td>
-                  <td style="padding: 4px 0; color: #0f172a;">${borrowerEmail}</td>
+                  <td style="padding: 4px 0; color: #0f172a;">${safeBorrowerEmail}</td>
                 </tr>
                 <tr>
                   <td style="padding: 4px 0; color: #64748b;">เบอร์โทรศัพท์:</td>
-                  <td style="padding: 4px 0; color: #0f172a; font-weight: 600;">${phone}</td>
+                  <td style="padding: 4px 0; color: #0f172a; font-weight: 600;">${safePhone}</td>
                 </tr>
                 <tr>
                   <td style="padding: 4px 0; color: #64748b; vertical-align: top;">วัตถุประสงค์:</td>
-                  <td style="padding: 4px 0; color: #334155;">${purpose || '-'}</td>
+                  <td style="padding: 4px 0; color: #334155;">${safePurpose}</td>
                 </tr>
               </table>
             </div>
@@ -121,10 +138,10 @@ export function generateAdminEmailHtml(payload: AdminNotificationPayload): { sub
             <!-- Dates Schedule -->
             <div style="background-color: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 8px; padding: 14px 18px; margin-bottom: 24px;">
               <div style="font-size: 13px; color: #1e3a8a; margin-bottom: 4px;">
-                <strong>วันที่ต้องการใช้งาน (วันรับของ):</strong> ${useDate}
+                <strong>วันที่ต้องการใช้งาน (วันรับของ):</strong> ${safeUseDate}
               </div>
               <div style="font-size: 13px; color: #1e3a8a;">
-                <strong>วันที่กำหนดส่งคืน:</strong> <span style="color: #dc2626; font-weight: 700;">${returnDate}</span>
+                <strong>วันที่กำหนดส่งคืน:</strong> <span style="color: #dc2626; font-weight: 700;">${safeReturnDate}</span>
               </div>
             </div>
 
@@ -149,12 +166,12 @@ export function generateAdminEmailHtml(payload: AdminNotificationPayload): { sub
               <p style="margin: 0 0 14px 0; font-size: 13px; font-weight: 600; color: #334155;">
                 คลิกปุ่มด้านล่างเพื่อเข้าสู่ระบบและพิจารณาอนุมัติคำขอ:
               </p>
-              <a href="${adminUrl}" target="_blank" style="display: inline-block; background-color: #4f46e5; color: #ffffff; font-weight: 700; font-size: 14px; padding: 12px 28px; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.25);">
+              <a href="${safeAdminUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background-color: #4f46e5; color: #ffffff; font-weight: 700; font-size: 14px; padding: 12px 28px; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.25);">
                 เข้าสู่หน้าจัดการระบบ (Admin Dashboard) &rarr;
               </a>
               <div style="margin-top: 14px; font-size: 11px; color: #64748b; line-height: 1.6; word-break: break-all;">
                 หรือเปิดผ่านลิงก์นี้:<br />
-                <a href="${adminUrl}" target="_blank" style="color: #4f46e5; text-decoration: underline;">${adminUrl}</a>
+                <a href="${safeAdminUrl}" target="_blank" rel="noopener noreferrer" style="color: #4f46e5; text-decoration: underline;">${safeAdminUrl}</a>
               </div>
             </div>
 
