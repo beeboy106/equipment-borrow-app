@@ -9,7 +9,8 @@ import { useCartStore, selectToastMessage } from '@/lib/store/cartStore';
 import Navbar from '@/components/Navbar';
 import EquipmentCard from '@/components/EquipmentCard';
 import FloatingCartBar from '@/components/FloatingCartBar';
-import { Search, Boxes, Sparkles, CheckCircle2, X } from 'lucide-react';
+import HeroBanner from '@/components/HeroBanner';
+import { Search, Boxes, CheckCircle2, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 // Dynamic Imports for Heavy Modals (atomic-component.md: bundle-dynamic-imports)
@@ -83,21 +84,7 @@ export default function HomePage() {
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-10">
         {/* Banner Title Area */}
-        <div className="mb-5 sm:mb-8 bg-gradient-to-r from-indigo-900 via-indigo-800 to-indigo-950 rounded-2xl sm:rounded-3xl p-4 sm:p-8 md:p-10 text-white shadow-xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
-          <div className="relative z-10 max-w-2xl">
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-indigo-500/30 text-indigo-200 text-[11px] sm:text-xs font-semibold mb-2 sm:mb-3 border border-indigo-400/20">
-              <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> ยืม-คืนอุปกรณ์ออนไลน์
-            </span>
-            <h2 className="text-xl sm:text-3xl md:text-4xl font-extrabold tracking-tight mb-1.5 sm:mb-2 leading-tight sm:leading-snug">
-              ยืม-คืนอุปกรณ์สำหรับจัดเลี้ยง <br className="hidden sm:inline" />
-              <span className="text-indigo-200">งานบริการกลาง</span>
-            </h2>
-            <p className="text-xs sm:text-base text-indigo-100/80 leading-relaxed max-w-xl">
-              สำหรับอาจารย์ นักศึกษา และบุคลากร ยืมอุปกรณ์ล่วงหน้าสะดวก พร้อมติดตามสถานะได้ทันที
-            </p>
-          </div>
-        </div>
+        <HeroBanner />
 
         {/* Success Alert Banner */}
         {notification ? (
