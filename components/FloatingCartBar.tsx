@@ -1,11 +1,13 @@
 'use client';
 
 import React from 'react';
-import { useCart } from '@/context/CartContext';
+import { useCartStore, selectTotalItemsCount } from '@/lib/store/cartStore';
 import { ShoppingBag, ArrowRight } from 'lucide-react';
 
 export default function FloatingCartBar() {
-  const { cart, totalItemsCount, setIsCartOpen } = useCart();
+  const totalItemsCount = useCartStore(selectTotalItemsCount);
+  const cartTypesCount = useCartStore((s) => s.cart.length);
+  const setIsCartOpen = useCartStore((s) => s.setIsCartOpen);
 
   if (totalItemsCount === 0) return null;
 
@@ -29,14 +31,14 @@ export default function FloatingCartBar() {
               ตะกร้า ({totalItemsCount} ชิ้น)
             </div>
             <div className="text-[10px] text-slate-300 whitespace-nowrap">
-              เลือกไว้ {cart.length} รายการ
+              เลือกไว้ {cartTypesCount} รายการ
             </div>
           </div>
 
           {/* Desktop Text */}
           <div className="hidden sm:block min-w-0">
             <div className="font-bold text-sm text-slate-100 truncate">
-              เลือกไว้ {cart.length} รายการ
+              เลือกไว้ {cartTypesCount} รายการ
             </div>
             <div className="text-xs text-slate-400">
               รวมทั้งหมด <span className="text-indigo-400 font-semibold">{totalItemsCount} ชิ้น</span>

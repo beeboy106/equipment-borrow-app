@@ -1,19 +1,18 @@
 'use client';
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Item } from '@/lib/types';
-import { useCart } from '@/context/CartContext';
+import { useCartStore, selectItemQuantity } from '@/lib/store/cartStore';
 import { Plus, Minus, Package, Check } from 'lucide-react';
 
 interface EquipmentCardProps {
   item: Item;
 }
 
-export default function EquipmentCard({ item }: EquipmentCardProps) {
-  const { cart, addToCart, updateQuantity } = useCart();
-
-  const cartEntry = cart.find((c) => c.item.id === item.id);
-  const inCartQty = cartEntry ? cartEntry.quantity : 0;
+function EquipmentCardComponent({ item }: EquipmentCardProps) {
+  const inCartQty = useCartStore(selectItemQuantity(item.id));
+  const addToCart = useCartStore((s) => s.addToCart);
+  const updateQuantity = useCartStore((s) => s.updateQuantity);
 
   return (
     <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col hover:shadow-lg hover:border-slate-300 transition-all duration-300 group">
@@ -23,6 +22,7 @@ export default function EquipmentCard({ item }: EquipmentCardProps) {
           <img
             src={item.image_url}
             alt={item.name}
+            loading="lazy"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
@@ -38,12 +38,12 @@ export default function EquipmentCard({ item }: EquipmentCardProps) {
         </span>
 
         {/* In-cart Indicator Badge */}
-        {inCartQty > 0 && (
+        {inCartQty > 0 ? (
           <span className="absolute top-2.5 right-2.5 sm:top-3.5 sm:right-3.5 text-[11px] sm:text-xs font-bold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full bg-indigo-600 text-white shadow-md flex items-center gap-1 animate-in zoom-in-75 duration-200">
             <Check className="w-3 h-3 stroke-[3]" />
             <span>เลือกแล้ว {inCartQty}</span>
           </span>
-        )}
+        ) : null}
       </div>
 
       {/* Details Area */}
@@ -64,8 +64,9 @@ export default function EquipmentCard({ item }: EquipmentCardProps) {
               <button
                 type="button"
                 onClick={() => updateQuantity(item.id, inCartQty - 1)}
-                className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-white text-indigo-700 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 flex items-center justify-center border border-indigo-100 transition shadow-xs active:scale-90"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-white text-indigo-700 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 flex items-center justify-center border border-indigo-100 transition shadow-xs active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                 title="ลดจำนวน"
+                aria-label={`ลดจำนวน ${item.name}`}
               >
                 <Minus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
@@ -80,8 +81,9 @@ export default function EquipmentCard({ item }: EquipmentCardProps) {
               <button
                 type="button"
                 onClick={() => updateQuantity(item.id, inCartQty + 1)}
-                className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center shadow-md shadow-indigo-200 transition active:scale-90"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center shadow-md shadow-indigo-200 transition active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                 title="เพิ่มจำนวน"
+                aria-label={`เพิ่มจำนวน ${item.name}`}
               >
                 <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
@@ -91,7 +93,7 @@ export default function EquipmentCard({ item }: EquipmentCardProps) {
             <button
               type="button"
               onClick={() => addToCart(item, 1)}
-              className="w-full py-2.5 px-3 sm:px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2 bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-200 hover:shadow-lg transition-all duration-200 active:scale-[0.98]"
+              className="w-full py-2.5 px-3 sm:px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2 bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-200 hover:shadow-lg transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
             >
               <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span>เลือกยืมอุปกรณ์นี้</span>
@@ -102,3 +104,13 @@ export default function EquipmentCard({ item }: EquipmentCardProps) {
     </div>
   );
 }
+
+export default memo(EquipmentCardComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.item.id === nextProps.item.id &&
+    prevProps.item.name === nextProps.item.name &&
+    prevProps.item.available_quantity === nextProps.item.available_quantity &&
+    prevProps.item.image_url === nextProps.item.image_url &&
+    prevProps.item.category === nextProps.item.category
+  );
+});

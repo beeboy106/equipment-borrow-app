@@ -3,14 +3,16 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase/client';
-import { useCart } from '@/context/CartContext';
+import { useCartStore, selectTotalItemsCount } from '@/lib/store/cartStore';
 import { ShoppingBag, LogIn, LogOut, Clock, Layers } from 'lucide-react';
 
 import { useRouter } from 'next/navigation';
 
 export default function Navbar() {
   const router = useRouter();
-  const { totalItemsCount, setIsCartOpen, clearCart } = useCart();
+  const totalItemsCount = useCartStore(selectTotalItemsCount);
+  const setIsCartOpen = useCartStore((s) => s.setIsCartOpen);
+  const clearCart = useCartStore((s) => s.clearCart);
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -91,16 +93,17 @@ export default function Navbar() {
           {/* Cart Trigger */}
           <button
             onClick={() => setIsCartOpen(true)}
-            className="relative flex items-center gap-1.5 sm:gap-2 p-2 sm:py-2.5 sm:px-4 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition font-bold text-xs border border-indigo-200/70 shadow-xs"
+            className="relative flex items-center gap-1.5 sm:gap-2 p-2 sm:py-2.5 sm:px-4 rounded-xl bg-indigo-50 hover:bg-indigo-100 active:scale-95 text-indigo-700 transition font-bold text-xs border border-indigo-200/70 shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             title="ตะกร้าอุปกรณ์"
+            aria-label={`ตะกร้าอุปกรณ์ มี ${totalItemsCount} ชิ้น`}
           >
             <ShoppingBag className="w-4 h-4 shrink-0" />
             <span className="hidden sm:inline">ตะกร้า</span>
-            {totalItemsCount > 0 && (
+            {totalItemsCount > 0 ? (
               <span className="absolute -top-1 -right-1 sm:static w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-indigo-600 text-white text-[9px] sm:text-[11px] flex items-center justify-center font-bold shadow-xs">
                 {totalItemsCount}
               </span>
-            )}
+            ) : null}
           </button>
 
           {/* User Profile / Login */}

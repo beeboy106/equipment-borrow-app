@@ -6,11 +6,19 @@ import { useRouter } from 'next/navigation';
 import { Item, BorrowRequest, StatsSummary } from '@/lib/types';
 import { formatDate, formatDateTime, exportToCSV } from '@/lib/utils';
 import StatsCards from '@/components/admin/StatsCards';
-import ItemManagerModal from '@/components/admin/ItemManagerModal';
 import BorrowHistoryTable from '@/components/admin/BorrowHistoryTable';
-import ApprovalModal from '@/components/admin/ApprovalModal';
 import ToastContainer, { ToastMessage, ToastType } from '@/components/ui/Toast';
-import ConfirmModal from '@/components/ui/ConfirmModal';
+import dynamic from 'next/dynamic';
+
+const ItemManagerModal = dynamic(() => import('@/components/admin/ItemManagerModal'), {
+  ssr: false,
+});
+const ApprovalModal = dynamic(() => import('@/components/admin/ApprovalModal'), {
+  ssr: false,
+});
+const ConfirmModal = dynamic(() => import('@/components/ui/ConfirmModal'), {
+  ssr: false,
+});
 import {
   Plus,
   Edit2,

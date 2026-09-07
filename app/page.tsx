@@ -1,20 +1,27 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { supabase } from '@/lib/supabase/client';
 import { Item } from '@/lib/types';
-import { useCart } from '@/context/CartContext';
+import { useCartStore, selectToastMessage } from '@/lib/store/cartStore';
 import Navbar from '@/components/Navbar';
 import EquipmentCard from '@/components/EquipmentCard';
-import CartDrawer from '@/components/CartDrawer';
-import BorrowModal from '@/components/BorrowModal';
 import FloatingCartBar from '@/components/FloatingCartBar';
-import { Search, Boxes, Sparkles, CheckCircle2, RefreshCw, X } from 'lucide-react';
+import { Search, Boxes, Sparkles, CheckCircle2, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+
+// Dynamic Imports for Heavy Modals (atomic-component.md: bundle-dynamic-imports)
+const CartDrawer = dynamic(() => import('@/components/CartDrawer'), {
+  ssr: false,
+});
+const BorrowModal = dynamic(() => import('@/components/BorrowModal'), {
+  ssr: false,
+});
 
 export default function HomePage() {
   const router = useRouter();
-  const { toastMessage } = useCart();
+  const toastMessage = useCartStore(selectToastMessage);
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -84,31 +91,35 @@ export default function HomePage() {
     setLoading(false);
   };
 
-  const categories = [
-    'ทั้งหมด',
-    ...Array.from(new Set(items.map((i) => i.category || 'ทั่วไป'))),
-  ];
+  const categories = useMemo(
+    () => ['ทั้งหมด', ...Array.from(new Set(items.map((i) => i.category || 'ทั่วไป')))],
+    [items]
+  );
 
-  const filteredItems = items.filter((item) => {
-    const matchSearch =
-      item.name.toLowerCase().includes(search.toLowerCase()) ||
-      (item.description && item.description.toLowerCase().includes(search.toLowerCase()));
-    const matchCategory =
-      selectedCategory === 'ทั้งหมด' || (item.category || 'ทั่วไป') === selectedCategory;
-    return matchSearch && matchCategory;
-  });
+  const filteredItems = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return items.filter((item) => {
+      const matchSearch =
+        !term ||
+        item.name.toLowerCase().includes(term) ||
+        (item.description && item.description.toLowerCase().includes(term));
+      const matchCategory =
+        selectedCategory === 'ทั้งหมด' || (item.category || 'ทั่วไป') === selectedCategory;
+      return matchSearch && matchCategory;
+    });
+  }, [items, search, selectedCategory]);
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 font-sans pb-28 sm:pb-24">
       <Navbar />
 
       {/* Floating Toast Notification */}
-      {toastMessage && (
+      {toastMessage ? (
         <div className="fixed top-20 sm:top-24 right-3 sm:right-8 z-50 bg-slate-900/90 backdrop-blur-md text-white px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-2xl shadow-xl border border-slate-700/50 flex items-center gap-2 text-xs font-semibold animate-in slide-in-from-top-4 fade-in duration-200 max-w-[90vw]">
           <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
           <span className="truncate">{toastMessage}</span>
         </div>
-      )}
+      ) : null}
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-10">
         {/* Banner Title Area */}
@@ -129,7 +140,7 @@ export default function HomePage() {
         </div>
 
         {/* Success Alert Banner */}
-        {notification && (
+        {notification ? (
           <div className="mb-5 sm:mb-8 p-3.5 sm:p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-between text-emerald-800 shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
             <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
               <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 flex-shrink-0" />
@@ -137,24 +148,25 @@ export default function HomePage() {
             </div>
             <button
               onClick={() => setNotification(null)}
-              className="text-emerald-600 hover:text-emerald-800 p-1 shrink-0"
+              className="text-emerald-600 hover:text-emerald-800 p-1 shrink-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+              aria-label="ปิดการแจ้งเตือน"
             >
               <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>
-        )}
+        ) : null}
 
         {/* Search and Filters Bar */}
         <div className="flex flex-col md:flex-row gap-3 sm:gap-4 justify-between items-stretch md:items-center mb-6 sm:mb-8">
           {/* Search Input */}
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 sm:w-5 sm:h-5" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 sm:w-5 sm:h-5 pointer-events-none" />
             <input
               type="text"
               placeholder="ค้นหาชื่ออุปกรณ์ เช่น ผ้า, กล้อง, ไมโครโฟน..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 sm:pl-10 pr-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-xs text-xs sm:text-sm"
+              className="w-full pl-9 sm:pl-10 pr-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500 bg-white shadow-xs text-xs sm:text-sm transition"
             />
           </div>
 
@@ -164,7 +176,7 @@ export default function HomePage() {
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all duration-200 ${
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
                   selectedCategory === cat
                     ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
                     : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
@@ -226,14 +238,16 @@ export default function HomePage() {
       <CartDrawer onOpenCheckout={() => setIsCheckoutOpen(true)} />
 
       {/* Checkout Modal Form */}
-      <BorrowModal
-        isOpen={isCheckoutOpen}
-        onClose={() => setIsCheckoutOpen(false)}
-        onSuccess={(msg) => {
-          setNotification(msg);
-          fetchItems();
-        }}
-      />
+      {isCheckoutOpen ? (
+        <BorrowModal
+          isOpen={isCheckoutOpen}
+          onClose={() => setIsCheckoutOpen(false)}
+          onSuccess={(msg) => {
+            setNotification(msg);
+            fetchItems();
+          }}
+        />
+      ) : null}
 
       {/* Footer */}
       <footer className="border-t border-slate-200 bg-white py-6 mt-16">

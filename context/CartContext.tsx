@@ -1,8 +1,17 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect } from 'react';
 import { Item, CartItem } from '@/lib/types';
 import { supabase } from '@/lib/supabase/client';
+import {
+  useCartStore,
+  selectCart,
+  selectIsCartOpen,
+  selectTotalItemsCount,
+  selectToastMessage,
+} from '@/lib/store/cartStore';
+
+export * from '@/lib/store/cartStore';
 
 interface CartContextType {
   cart: CartItem[];
@@ -20,10 +29,18 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState<string>('guest');
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const cart = useCartStore(selectCart);
+  const isCartOpen = useCartStore(selectIsCartOpen);
+  const totalItemsCount = useCartStore(selectTotalItemsCount);
+  const toastMessage = useCartStore(selectToastMessage);
+
+  const addToCart = useCartStore((s) => s.addToCart);
+  const removeFromCart = useCartStore((s) => s.removeFromCart);
+  const updateQuantity = useCartStore((s) => s.updateQuantity);
+  const clearCart = useCartStore((s) => s.clearCart);
+  const setIsCartOpen = useCartStore((s) => s.setIsCartOpen);
+  const showToast = useCartStore((s) => s.showToast);
+  const setCurrentUserId = useCartStore((s) => s.setCurrentUserId);
 
   // ตรวจจับและแยกตะกร้าสินค้าตาม User ID เพื่อไม่ให้ตะกร้าของแต่ละบัญชีปะปนกัน
   useEffect(() => {
@@ -33,7 +50,6 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
       } = await supabase.auth.getSession();
       const userId = session?.user?.id || 'guest';
       setCurrentUserId(userId);
-      loadUserCart(userId);
     };
 
     initAuth();
@@ -43,91 +59,12 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       const userId = session?.user?.id || 'guest';
       setCurrentUserId(userId);
-      loadUserCart(userId);
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
-
-  const loadUserCart = (userId: string) => {
-    try {
-      const savedCart = localStorage.getItem(`equipment_borrow_cart_${userId}`);
-      if (savedCart) {
-        setCart(JSON.parse(savedCart));
-      } else {
-        setCart([]);
-      }
-    } catch {
-      setCart([]);
-    }
-  };
-
-  // บันทึกตะกร้าแยกลงใน LocalStorage ตาม User ID ของผู้ใช้นั้นๆ
-  useEffect(() => {
-    try {
-      localStorage.setItem(`equipment_borrow_cart_${currentUserId}`, JSON.stringify(cart));
-    } catch {
-      // Ignore localStorage errors
-    }
-  }, [cart, currentUserId]);
-
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-  };
-
-  useEffect(() => {
-    if (toastMessage) {
-      const timer = setTimeout(() => {
-        setToastMessage(null);
-      }, 2500);
-      return () => clearTimeout(timer);
-    }
-  }, [toastMessage]);
-
-  const addToCart = (item: Item, quantity: number = 1) => {
-    setCart((prev) => {
-      const existing = prev.find((i) => i.item.id === item.id);
-      if (existing) {
-        const newQty = existing.quantity + quantity;
-        return prev.map((i) => (i.item.id === item.id ? { ...i, quantity: newQty } : i));
-      }
-      return [...prev, { item, quantity: Math.max(1, quantity) }];
-    });
-    showToast(`เพิ่ม "${item.name}" ลงในตะกร้าแล้ว`);
-  };
-
-  const removeFromCart = (itemId: string) => {
-    setCart((prev) => prev.filter((i) => i.item.id !== itemId));
-  };
-
-  const updateQuantity = (itemId: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(itemId);
-      return;
-    }
-    setCart((prev) =>
-      prev.map((i) => {
-        if (i.item.id === itemId) {
-          return { ...i, quantity };
-        }
-        return i;
-      })
-    );
-  };
-
-  const clearCart = () => {
-    setCart([]);
-    try {
-      localStorage.removeItem(`equipment_borrow_cart_${currentUserId}`);
-      localStorage.removeItem('equipment_borrow_cart');
-    } catch {
-      // Ignore
-    }
-  };
-
-  const totalItemsCount = cart.reduce((sum, i) => sum + i.quantity, 0);
+  }, [setCurrentUserId]);
 
   return (
     <CartContext.Provider

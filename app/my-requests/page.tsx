@@ -7,7 +7,11 @@ import { formatDate, formatDateTime } from '@/lib/utils';
 import Navbar from '@/components/Navbar';
 import Link from 'next/link';
 import ToastContainer, { ToastMessage, ToastType } from '@/components/ui/Toast';
-import ConfirmModal from '@/components/ui/ConfirmModal';
+import dynamic from 'next/dynamic';
+
+const ConfirmModal = dynamic(() => import('@/components/ui/ConfirmModal'), {
+  ssr: false,
+});
 import {
   Clock,
   CheckCircle2,

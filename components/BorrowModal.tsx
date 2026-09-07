@@ -247,12 +247,12 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Error Message */}
-            {errorMessage && (
-              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-xl flex items-center gap-2">
+            {errorMessage ? (
+              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-xl flex items-center gap-2 animate-in fade-in duration-200">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
                 <p>{errorMessage}</p>
               </div>
-            )}
+            ) : null}
 
             {/* Cart Items Summary Box */}
             <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
@@ -485,14 +485,14 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
                 type="button"
                 onClick={onClose}
                 disabled={submitting}
-                className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 transition"
+                className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
               >
                 ยกเลิก
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-200 transition disabled:opacity-50"
+                className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-200 transition active:scale-95 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
               >
                 {submitting ? 'กำลังส่งคำขอ...' : 'ยืนยันการยืม'}
               </button>
