@@ -1,34 +1,80 @@
-﻿'use client';
+'use client';
 
-import React from 'react';
-import { Sparkles } from 'lucide-react';
+import React, { useState, useRef, useCallback } from 'react';
+import { Sparkles, Clock, ShieldCheck, CheckCircle2, RotateCcw, Box } from 'lucide-react';
 
 export default function HeroBanner() {
-  return (
-    <div className="relative mb-6 sm:mb-10 rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-br from-slate-950 via-[#0b0f2c] to-[#050716] border border-indigo-500/20 shadow-2xl shadow-indigo-950/60 transition-all duration-300">
-      {/* Ambient Lighting & Glow Orbs */}
-      <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-96 h-96 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-1/4 translate-y-12 w-80 h-80 bg-violet-600/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-1/2 right-1/3 -translate-y-1/2 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [rotate, setRotate] = useState({ x: 0, y: 0 });
+  const [glint, setGlint] = useState({ x: 50, y: 50 });
+  const [isHovered, setIsHovered] = useState(false);
 
-      {/* Cyber Grid Texture with Radial Fade */}
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    // Dynamic 3D tilt angles (-14 to +14 deg)
+    const rotateY = ((x - centerX) / centerX) * 14;
+    const rotateX = -((y - centerY) / centerY) * 14;
+
+    const glintX = (x / rect.width) * 100;
+    const glintY = (y / rect.height) * 100;
+
+    setRotate({ x: rotateX, y: rotateY });
+    setGlint({ x: glintX, y: glintY });
+    setIsHovered(true);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setIsHovered(false);
+    setRotate({ x: 0, y: 0 });
+    setGlint({ x: 50, y: 50 });
+  }, []);
+
+  return (
+    <div
+      ref={containerRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="relative mb-6 sm:mb-10 rounded-3xl overflow-hidden bg-gradient-to-br from-[#060818] via-[#0c1033] to-[#07091f] border border-indigo-500/25 shadow-[0_25px_60px_-15px_rgba(15,18,50,0.8)] transition-all duration-300"
+      style={{ perspective: 1200 }}
+    >
+      {/* Dynamic Specular Glint Reflection following Mouse */}
       <div
-        className="absolute inset-0 opacity-[0.12] pointer-events-none"
+        className="absolute inset-0 pointer-events-none transition-opacity duration-500"
         style={{
-          backgroundImage:
-            'linear-gradient(to right, rgba(255, 255, 255, 0.2) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.2) 1px, transparent 1px)',
-          backgroundSize: '32px 32px',
-          maskImage: 'radial-gradient(ellipse at 70% 50%, black 20%, transparent 85%)',
-          WebkitMaskImage: 'radial-gradient(ellipse at 70% 50%, black 20%, transparent 85%)',
+          opacity: isHovered ? 0.35 : 0.15,
+          background: `radial-gradient(circle 500px at ${glint.x}% ${glint.y}%, rgba(129, 140, 248, 0.4), transparent 70%)`,
         }}
       />
 
-      {/* Content Grid: Left Text + Right 3D Visual */}
-      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center p-6 sm:p-10 md:p-12">
-        {/* Left Column: Typography & Badge */}
+      {/* Ambient Atmospheric Light Orbs */}
+      <div className="absolute -top-20 -right-20 w-[420px] h-[420px] bg-indigo-500/20 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute -bottom-20 left-1/4 w-[360px] h-[360px] bg-violet-600/15 rounded-full blur-[90px] pointer-events-none" />
+      <div className="absolute top-1/2 right-1/3 -translate-y-1/2 w-[280px] h-[280px] bg-cyan-400/10 rounded-full blur-[80px] pointer-events-none" />
+
+      {/* Modern Perspective Grid Texture */}
+      <div
+        className="absolute inset-0 opacity-[0.14] pointer-events-none"
+        style={{
+          backgroundImage:
+            'linear-gradient(to right, rgba(255, 255, 255, 0.18) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.18) 1px, transparent 1px)',
+          backgroundSize: '36px 36px',
+          maskImage: 'radial-gradient(ellipse at 65% 50%, black 25%, transparent 85%)',
+          WebkitMaskImage: 'radial-gradient(ellipse at 65% 50%, black 25%, transparent 85%)',
+        }}
+      />
+
+      {/* Content Layout */}
+      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-6 items-center p-6 sm:p-10 md:p-12">
+        {/* Left Column: Typography & Badges */}
         <div className="lg:col-span-7 flex flex-col items-start justify-center">
           {/* Apple-style Frosted Glass Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.08] hover:bg-white/[0.12] backdrop-blur-md border border-white/15 text-white/95 text-[11px] sm:text-xs font-semibold mb-3 sm:mb-4 shadow-inner transition-colors duration-200">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.08] hover:bg-white/[0.12] backdrop-blur-md border border-white/15 text-white/95 text-[11px] sm:text-xs font-semibold mb-3 sm:mb-4 shadow-inner transition-colors duration-200">
             <span className="flex h-2 w-2 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-400" />
@@ -40,142 +86,207 @@ export default function HeroBanner() {
           {/* Clean & Luxury Headline */}
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[40px] font-extrabold text-white tracking-tight leading-[1.25] mb-2.5 sm:mb-3">
             ยืม-คืนอุปกรณ์สำหรับจัดเลี้ยง <br className="hidden sm:inline" />
-            <span className="text-white/90">งานบริการกลาง</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-100 to-indigo-300">
+              งานบริการกลาง
+            </span>
           </h1>
 
-          {/* Subtitle Description */}
-          <p className="text-xs sm:text-sm md:text-base text-slate-300/80 font-normal leading-relaxed max-w-xl">
+          {/* Subtitle */}
+          <p className="text-xs sm:text-sm md:text-base text-slate-300/85 font-normal leading-relaxed max-w-xl mb-5 sm:mb-6">
             สำหรับอาจารย์ นักศึกษา และบุคลากร ยืมอุปกรณ์ล่วงหน้าสะดวก พร้อมติดตามสถานะได้ทันที
           </p>
+
+          {/* Responsive Feature Pills (Spline Style) */}
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] backdrop-blur-md border border-white/10 text-white/90 text-xs font-medium hover:bg-white/[0.1] transition">
+              <Clock className="w-3.5 h-3.5 text-indigo-400" />
+              <span>ยืมล่วงหน้า 24 ชม.</span>
+            </div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] backdrop-blur-md border border-white/10 text-white/90 text-xs font-medium hover:bg-white/[0.1] transition">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span>อนุมัติผ่านระบบ</span>
+            </div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] backdrop-blur-md border border-white/10 text-white/90 text-xs font-medium hover:bg-white/[0.1] transition">
+              <Box className="w-3.5 h-3.5 text-cyan-400" />
+              <span>สต็อกคงเหลือ Real-time</span>
+            </div>
+          </div>
         </div>
 
-        {/* Right Column: 3D Glassmorphism Graphic Centerpiece */}
-        <div className="lg:col-span-5 flex items-center justify-center lg:justify-end relative select-none">
-          <div className="relative w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center">
-            {/* Ambient Background Aura behind 3D Object */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/20 via-violet-500/20 to-cyan-400/20 rounded-full blur-2xl animate-shimmer" />
+        {/* Right Column: Interactive 3D Spline-Inspired Stage */}
+        <div className="lg:col-span-5 flex items-center justify-center relative select-none min-h-[260px] sm:min-h-[300px]">
+          {/* 3D Transform Container that tilts with Cursor */}
+          <div
+            className="relative w-72 h-72 sm:w-80 sm:h-80 flex items-center justify-center transition-transform duration-200 ease-out"
+            style={{
+              transform: `rotateX(${rotate.x}deg) rotateY(${rotate.y}deg)`,
+              transformStyle: 'preserve-3d',
+            }}
+          >
+            {/* Ambient Backlight Glow underneath the 3D scene */}
+            <div
+              className="absolute inset-0 bg-gradient-to-tr from-indigo-500/25 via-violet-500/25 to-cyan-400/25 rounded-full blur-2xl animate-shimmer"
+              style={{ transform: 'translateZ(-40px)' }}
+            />
 
-            {/* Floating 3D Isometric Glass Cube with Orbiting Ring */}
-            <div className="relative z-10 w-full h-full flex items-center justify-center animate-float">
+            {/* Floating 3D Isometric Centerpiece */}
+            <div
+              className="relative z-10 w-full h-full flex items-center justify-center animate-float"
+              style={{ transform: 'translateZ(20px)' }}
+            >
               <svg
-                viewBox="0 0 240 240"
+                viewBox="0 0 260 260"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
-                className="w-full h-full drop-shadow-[0_20px_35px_rgba(79,70,229,0.35)]"
+                className="w-full h-full drop-shadow-[0_25px_45px_rgba(99,102,241,0.4)]"
               >
                 <defs>
-                  {/* Glass Shading Gradients */}
-                  <linearGradient id="glassTop" x1="120" y1="45" x2="120" y2="105" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0.45" />
-                    <stop offset="100%" stopColor="#818cf8" stopOpacity="0.15" />
+                  {/* Glass Shading & Materials */}
+                  <linearGradient id="mainGlassTop" x1="130" y1="50" x2="130" y2="115" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0.55" />
+                    <stop offset="50%" stopColor="#a5b4fc" stopOpacity="0.25" />
+                    <stop offset="100%" stopColor="#6366f1" stopOpacity="0.1" />
                   </linearGradient>
 
-                  <linearGradient id="glassLeft" x1="60" y1="75" x2="120" y2="175" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stopColor="#6366f1" stopOpacity="0.3" />
-                    <stop offset="100%" stopColor="#1e1b4b" stopOpacity="0.55" />
+                  <linearGradient id="mainGlassLeft" x1="65" y1="85" x2="130" y2="190" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#818cf8" stopOpacity="0.35" />
+                    <stop offset="50%" stopColor="#4f46e5" stopOpacity="0.55" />
+                    <stop offset="100%" stopColor="#1e1b4b" stopOpacity="0.75" />
                   </linearGradient>
 
-                  <linearGradient id="glassRight" x1="120" y1="105" x2="180" y2="175" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stopColor="#a855f7" stopOpacity="0.35" />
-                    <stop offset="100%" stopColor="#312e81" stopOpacity="0.6" />
+                  <linearGradient id="mainGlassRight" x1="130" y1="115" x2="195" y2="190" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#c084fc" stopOpacity="0.4" />
+                    <stop offset="50%" stopColor="#7c3aed" stopOpacity="0.6" />
+                    <stop offset="100%" stopColor="#312e81" stopOpacity="0.8" />
                   </linearGradient>
 
-                  <linearGradient id="glowBorder" x1="60" y1="45" x2="180" y2="175" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0.9" />
-                    <stop offset="50%" stopColor="#c7d2fe" stopOpacity="0.4" />
-                    <stop offset="100%" stopColor="#818cf8" stopOpacity="0.1" />
+                  <linearGradient id="crystalBorder" x1="65" y1="50" x2="195" y2="190" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
+                    <stop offset="40%" stopColor="#c7d2fe" stopOpacity="0.6" />
+                    <stop offset="80%" stopColor="#818cf8" stopOpacity="0.25" />
+                    <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.7" />
                   </linearGradient>
 
-                  <linearGradient id="orbitGradient" x1="40" y1="120" x2="200" y2="120" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.8" />
+                  <linearGradient id="orbitCirculation" x1="30" y1="130" x2="230" y2="130" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.9" />
                     <stop offset="50%" stopColor="#818cf8" stopOpacity="0.3" />
-                    <stop offset="100%" stopColor="#c084fc" stopOpacity="0.8" />
+                    <stop offset="100%" stopColor="#c084fc" stopOpacity="0.9" />
                   </linearGradient>
 
-                  {/* Specular Edge Highlights */}
-                  <linearGradient id="specularGlint" x1="60" y1="75" x2="120" y2="105" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0.9" />
+                  <linearGradient id="specularGlintTop" x1="65" y1="85" x2="130" y2="115" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
                     <stop offset="100%" stopColor="#ffffff" stopOpacity="0.1" />
                   </linearGradient>
                 </defs>
 
-                {/* Back Orbit Ring (behind cube) */}
-                <path
-                  d="M 40 120 C 40 90, 200 90, 200 120"
-                  stroke="url(#orbitGradient)"
+                {/* Orbit Trajectory Ring (Back Arc) */}
+                <ellipse
+                  cx="130"
+                  cy="135"
+                  rx="95"
+                  ry="36"
+                  stroke="url(#orbitCirculation)"
                   strokeWidth="1.5"
-                  strokeDasharray="4 4"
-                  strokeOpacity="0.5"
+                  strokeDasharray="5 5"
+                  strokeOpacity="0.4"
+                  transform="rotate(-15 130 135)"
                 />
 
-                {/* Internal Luminous Energy Core */}
-                <circle cx="120" cy="115" r="22" fill="#818cf8" fillOpacity="0.35" filter="blur(10px)" />
-                <circle cx="120" cy="115" r="12" fill="#c7d2fe" fillOpacity="0.8" filter="blur(4px)" />
+                {/* Glowing Energy Core inside the Glass Box */}
+                <circle cx="130" cy="125" r="26" fill="#818cf8" fillOpacity="0.45" filter="blur(14px)" />
+                <circle cx="130" cy="125" r="14" fill="#38bdf8" fillOpacity="0.7" filter="blur(6px)" />
+                <circle cx="130" cy="125" r="5" fill="#ffffff" />
 
                 {/* Left Glass Facet */}
                 <polygon
-                  points="60,75 120,105 120,175 60,145"
-                  fill="url(#glassLeft)"
-                  stroke="url(#glowBorder)"
-                  strokeWidth="1.2"
-                  strokeOpacity="0.7"
+                  points="65,85 130,118 130,195 65,162"
+                  fill="url(#mainGlassLeft)"
+                  stroke="url(#crystalBorder)"
+                  strokeWidth="1.5"
+                  strokeOpacity="0.8"
                 />
 
                 {/* Right Glass Facet */}
                 <polygon
-                  points="120,105 180,75 180,145 120,175"
-                  fill="url(#glassRight)"
-                  stroke="url(#glowBorder)"
-                  strokeWidth="1.2"
-                  strokeOpacity="0.6"
+                  points="130,118 195,85 195,162 130,195"
+                  fill="url(#mainGlassRight)"
+                  stroke="url(#crystalBorder)"
+                  strokeWidth="1.5"
+                  strokeOpacity="0.7"
                 />
 
-                {/* Top Glass Facet (Glossy Specular) */}
+                {/* Top Glass Facet (Glossy Reflection) */}
                 <polygon
-                  points="120,45 180,75 120,105 60,75"
-                  fill="url(#glassTop)"
-                  stroke="url(#glowBorder)"
-                  strokeWidth="1.2"
-                  strokeOpacity="0.85"
+                  points="130,52 195,85 130,118 65,85"
+                  fill="url(#mainGlassTop)"
+                  stroke="url(#crystalBorder)"
+                  strokeWidth="1.5"
+                  strokeOpacity="0.9"
                 />
 
-                {/* Inner Geometric Equipment Divider / Shelf Grid */}
-                <line x1="60" y1="110" x2="120" y2="140" stroke="#ffffff" strokeWidth="1" strokeOpacity="0.3" />
-                <line x1="120" y1="140" x2="180" y2="110" stroke="#ffffff" strokeWidth="1" strokeOpacity="0.3" />
-                <line x1="120" y1="75" x2="120" y2="140" stroke="#ffffff" strokeWidth="1" strokeOpacity="0.25" strokeDasharray="3 3" />
+                {/* Internal Shelf Grid Lines inside Vault */}
+                <line x1="65" y1="124" x2="130" y2="157" stroke="#ffffff" strokeWidth="1" strokeOpacity="0.3" />
+                <line x1="130" y1="157" x2="195" y2="124" stroke="#ffffff" strokeWidth="1" strokeOpacity="0.3" />
+                <line x1="130" y1="85" x2="130" y2="157" stroke="#ffffff" strokeWidth="1" strokeOpacity="0.25" strokeDasharray="3 3" />
 
-                {/* Front Orbit Ring (overlapping front with circulation arrow) */}
+                {/* Orbit Trajectory Ring (Front Arc) */}
                 <path
-                  d="M 200 120 C 200 155, 40 155, 40 120"
-                  stroke="url(#orbitGradient)"
+                  d="M 40 148 C 65 178, 195 170, 220 120"
+                  stroke="url(#orbitCirculation)"
                   strokeWidth="2.5"
                   strokeLinecap="round"
                 />
 
-                {/* Return Circulation Orbit Nodes */}
-                <circle cx="178" cy="138" r="4.5" fill="#38bdf8" />
-                <circle cx="178" cy="138" r="8" fill="#38bdf8" fillOpacity="0.35" />
-                <circle cx="62" cy="135" r="3.5" fill="#c084fc" />
+                {/* Orbiting Satellite Particle Nodes */}
+                <circle cx="218" cy="122" r="5" fill="#38bdf8" />
+                <circle cx="218" cy="122" r="9" fill="#38bdf8" fillOpacity="0.3" />
 
-                {/* Specular Highlight Streak on Top Edge */}
-                <line x1="60" y1="75" x2="120" y2="105" stroke="url(#specularGlint)" strokeWidth="2" strokeLinecap="round" />
-                <circle cx="120" cy="45" r="2.5" fill="#ffffff" />
-                <circle cx="60" cy="75" r="2" fill="#ffffff" fillOpacity="0.8" />
-                <circle cx="180" cy="75" r="2" fill="#ffffff" fillOpacity="0.8" />
+                <circle cx="44" cy="150" r="4" fill="#c084fc" />
+                <circle cx="44" cy="150" r="7" fill="#c084fc" fillOpacity="0.3" />
+
+                {/* Specular Highlight on Leading Edge */}
+                <line x1="65" y1="85" x2="130" y2="118" stroke="url(#specularGlintTop)" strokeWidth="2.5" strokeLinecap="round" />
+                <circle cx="130" cy="52" r="3" fill="#ffffff" />
+                <circle cx="65" cy="85" r="2.5" fill="#ffffff" fillOpacity="0.9" />
+                <circle cx="195" cy="85" r="2.5" fill="#ffffff" fillOpacity="0.9" />
               </svg>
             </div>
 
-            {/* Decorative Floating Crystal Shards / Floating Badge */}
-            <div className="absolute top-4 right-4 animate-float-delayed pointer-events-none">
-              <div className="w-9 h-9 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 shadow-lg flex items-center justify-center">
-                <span className="text-sm">📦</span>
+            {/* Floating 3D Frosted Glass Card 1 (Top Right - Parallax Z: 55px) */}
+            <div
+              className="absolute -top-1 -right-2 sm:right-0 animate-float-delayed pointer-events-none"
+              style={{
+                transform: 'translateZ(55px) rotateZ(3deg)',
+                transformStyle: 'preserve-3d',
+              }}
+            >
+              <div className="px-3 py-2 rounded-2xl bg-white/[0.12] hover:bg-white/[0.18] backdrop-blur-xl border border-white/25 shadow-[0_15px_30px_rgba(0,0,0,0.35)] flex items-center gap-2 text-white">
+                <div className="w-6 h-6 rounded-lg bg-emerald-500/25 border border-emerald-400/40 flex items-center justify-center text-emerald-300">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                </div>
+                <div>
+                  <div className="text-[10px] text-slate-300 font-medium leading-none">สถานะคลัง</div>
+                  <div className="text-xs font-bold text-white leading-tight">พร้อมยืมทันที</div>
+                </div>
               </div>
             </div>
 
-            <div className="absolute bottom-6 left-2 animate-float pointer-events-none">
-              <div className="px-2.5 py-1 rounded-lg bg-indigo-950/60 backdrop-blur-md border border-indigo-400/25 shadow-lg flex items-center gap-1 text-[10px] text-indigo-200 font-medium">
-                <span className="text-emerald-400 font-bold">✓</span>
-                <span>ระบบพร้อมใช้</span>
+            {/* Floating 3D Frosted Glass Card 2 (Bottom Left - Parallax Z: 45px) */}
+            <div
+              className="absolute -bottom-2 -left-3 sm:left-0 animate-float pointer-events-none"
+              style={{
+                transform: 'translateZ(45px) rotateZ(-3deg)',
+                transformStyle: 'preserve-3d',
+              }}
+            >
+              <div className="px-3 py-2 rounded-2xl bg-slate-900/80 backdrop-blur-xl border border-indigo-400/30 shadow-[0_15px_30px_rgba(0,0,0,0.4)] flex items-center gap-2 text-white">
+                <div className="w-6 h-6 rounded-lg bg-indigo-500/25 border border-indigo-400/40 flex items-center justify-center text-indigo-300">
+                  <RotateCcw className="w-3.5 h-3.5" />
+                </div>
+                <div>
+                  <div className="text-[10px] text-indigo-200 font-medium leading-none">ระบบบริการ</div>
+                  <div className="text-xs font-bold text-white leading-tight">ยืม-คืนสะดวกรวดเร็ว</div>
+                </div>
               </div>
             </div>
           </div>
