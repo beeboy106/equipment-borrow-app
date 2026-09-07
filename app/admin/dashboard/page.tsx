@@ -52,6 +52,7 @@ export default function AdminDashboardPage() {
   const [requests, setRequests] = useState<BorrowRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [isAuthorized, setIsAuthorized] = useState(false);
 
   // Filters & Search
   const [searchFilter, setSearchFilter] = useState('');
@@ -115,7 +116,8 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     const unsubscribe = subscribeAuth(async (user) => {
       if (!user) {
-        router.push('/admin/login');
+        setIsAuthorized(false);
+        router.replace('/admin/login');
         return;
       }
 
@@ -125,6 +127,7 @@ export default function AdminDashboardPage() {
         Boolean(user.email && !user.providerData.some((p) => p.providerId === 'google.com'));
 
       if (!isEmailProvider) {
+        setIsAuthorized(false);
         setAuthError(
           'บัญชีที่คุณเข้าสู่ระบบอยู่ในขณะนี้เป็นบัญชีผู้ใช้ทั่วไป (Google) ไม่มีสิทธิ์เข้าถึงส่วนผู้ดูแลระบบ กรุณาเข้าสู่ระบบด้วยบัญชีแอดมิน (Email & Password)'
         );
@@ -132,6 +135,7 @@ export default function AdminDashboardPage() {
         return;
       }
 
+      setIsAuthorized(true);
       await loadAllData();
     });
 
@@ -433,6 +437,23 @@ export default function AdminDashboardPage() {
             >
               กลับสู่หน้าหลัก
             </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Prevent ANY dashboard UI from rendering before admin authorization is confirmed
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4">
+        <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-xl flex flex-col items-center gap-4 max-w-sm w-full text-center animate-in fade-in duration-150">
+          <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
+            <div className="w-6 h-6 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-slate-800">กำลังตรวจสอบสิทธิ์ผู้ดูแลระบบ...</h3>
+            <p className="text-xs text-slate-400 mt-1">กรุณารอสักครู่ ระบบกำลังยืนยันความปลอดภัย</p>
           </div>
         </div>
       </div>
