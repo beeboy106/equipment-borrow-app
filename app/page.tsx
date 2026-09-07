@@ -104,7 +104,7 @@ export default function HomePage() {
         ) : null}
 
         {/* Search and Filters Bar */}
-        <div className="flex flex-col md:flex-row gap-3 sm:gap-4 justify-between items-stretch md:items-center mb-6 sm:mb-8">
+        <div id="equipment-catalog" className="scroll-mt-6 flex flex-col md:flex-row gap-3 sm:gap-4 justify-between items-stretch md:items-center mb-6 sm:mb-8">
           {/* Search Input */}
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 sm:w-5 sm:h-5 pointer-events-none" />
