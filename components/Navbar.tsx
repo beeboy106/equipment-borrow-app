@@ -51,18 +51,18 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm transition-all">
-      <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 min-h-[64px] h-auto sm:h-20 py-2.5 sm:py-0 flex items-center justify-between gap-2">
+    <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm transition-all w-full max-w-full overflow-hidden">
+      <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 min-h-[56px] sm:min-h-[64px] h-auto sm:h-20 py-2 sm:py-0 flex items-center justify-between gap-1.5 sm:gap-2">
         {/* Brand Logo */}
-        <Link href="/" className="flex items-center gap-2 sm:gap-3 group shrink-0">
+        <Link href="/" className="flex items-center gap-1.5 sm:gap-3 group shrink min-w-0">
           <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-200 group-hover:scale-105 transition-transform duration-300 shrink-0">
             <PackageCheck className="w-4 h-4 sm:w-6 sm:h-6" />
           </div>
-          <div>
-            <div className="font-extrabold text-slate-900 text-xs sm:text-lg leading-tight group-hover:text-indigo-600 transition-colors whitespace-nowrap">
+          <div className="min-w-0">
+            <div className="font-extrabold text-slate-900 text-xs sm:text-lg leading-tight group-hover:text-indigo-600 transition-colors truncate">
               ยืม-คืนอุปกรณ์
             </div>
-            <div className="text-[10px] sm:text-xs text-slate-400 font-medium whitespace-nowrap">
+            <div className="text-[10px] sm:text-xs text-slate-400 font-medium truncate">
               คณะวิทยาศาสตร์
             </div>
           </div>
@@ -150,12 +150,12 @@ export default function Navbar() {
               ) : (
                 <button
                   onClick={handleGoogleLogin}
-                  className="flex items-center gap-2 py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white transition font-bold text-xs shadow-md shadow-indigo-200"
+                  className="flex items-center gap-1.5 sm:gap-2 py-2 sm:py-2.5 px-2.5 sm:px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white transition font-bold text-xs shadow-md shadow-indigo-200 shrink-0"
                 >
-                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current shrink-0" viewBox="0 0 24 24">
                     <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" />
                   </svg>
-                  <span>เข้าสู่ระบบ</span>
+                  <span className="whitespace-nowrap">เข้าสู่ระบบ</span>
                 </button>
               )}
             </>

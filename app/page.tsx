@@ -70,7 +70,7 @@ export default function HomePage() {
   }, [items, search, selectedCategory]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 font-sans pb-28 sm:pb-24">
+    <div className="min-h-screen flex flex-col bg-slate-50 font-sans pb-28 sm:pb-24 w-full max-w-full overflow-x-hidden">
       <Navbar />
 
       {/* Floating Toast Notification */}
@@ -81,19 +81,20 @@ export default function HomePage() {
         </div>
       ) : null}
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-10">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-2.5 sm:px-6 lg:px-8 py-4 sm:py-10 min-w-0">
         {/* Banner Title Area */}
-        <div className="mb-5 sm:mb-8 bg-gradient-to-r from-indigo-900 via-indigo-800 to-indigo-950 rounded-2xl sm:rounded-3xl p-4 sm:p-8 md:p-10 text-white shadow-xl relative overflow-hidden">
+        <div className="mb-5 sm:mb-8 bg-gradient-to-r from-indigo-900 via-indigo-800 to-indigo-950 rounded-2xl sm:rounded-3xl p-4 sm:p-8 md:p-10 text-white shadow-xl relative overflow-hidden w-full">
           <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
-          <div className="relative z-10 max-w-2xl">
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-indigo-500/30 text-indigo-200 text-[11px] sm:text-xs font-semibold mb-2 sm:mb-3 border border-indigo-400/20">
-              <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> ยืม-คืนอุปกรณ์ออนไลน์
+          <div className="relative z-10 max-w-2xl min-w-0">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-indigo-500/30 text-indigo-200 text-[11px] sm:text-xs font-semibold mb-2 sm:mb-3 border border-indigo-400/20 max-w-full">
+              <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
+              <span className="truncate">ยืม-คืนอุปกรณ์ออนไลน์</span>
             </span>
-            <h2 className="text-xl sm:text-3xl md:text-4xl font-extrabold tracking-tight mb-1.5 sm:mb-2 leading-tight sm:leading-snug">
+            <h2 className="text-xl sm:text-3xl md:text-4xl font-extrabold tracking-tight mb-1.5 sm:mb-2 leading-tight sm:leading-snug break-words">
               ยืม-คืนอุปกรณ์สำหรับจัดเลี้ยง <br className="hidden sm:inline" />
               <span className="text-indigo-200">งานบริการกลาง</span>
             </h2>
-            <p className="text-xs sm:text-base text-indigo-100/80 leading-relaxed max-w-xl">
+            <p className="text-xs sm:text-base text-indigo-100/80 leading-relaxed max-w-xl break-words">
               สำหรับอาจารย์ นักศึกษา และบุคลากร ยืมอุปกรณ์ล่วงหน้าสะดวก พร้อมติดตามสถานะได้ทันที
             </p>
           </div>
@@ -117,9 +118,9 @@ export default function HomePage() {
         ) : null}
 
         {/* Search and Filters Bar */}
-        <div className="flex flex-col md:flex-row gap-3 sm:gap-4 justify-between items-stretch md:items-center mb-6 sm:mb-8">
+        <div className="flex flex-col md:flex-row gap-3 sm:gap-4 justify-between items-stretch md:items-center mb-6 sm:mb-8 w-full min-w-0 max-w-full">
           {/* Search Input */}
-          <div className="relative flex-1 max-w-md">
+          <div className="relative flex-1 max-w-md w-full min-w-0">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 sm:w-5 sm:h-5 pointer-events-none" />
             <input
               type="text"
@@ -131,12 +132,12 @@ export default function HomePage() {
           </div>
 
           {/* Categories Tab Pill */}
-          <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none touch-pan-x">
+          <div className="w-full min-w-0 max-w-full overflow-x-auto flex gap-1.5 sm:gap-2 pb-1 sm:pb-0 scrollbar-none touch-pan-x">
             {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all duration-200 active:scale-95 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
                   selectedCategory === cat
                     ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
                     : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
