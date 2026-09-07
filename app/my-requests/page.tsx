@@ -206,7 +206,7 @@ export default function MyRequestsPage() {
             </p>
             <button
               onClick={handleGoogleLogin}
-              className="inline-flex items-center gap-2 py-2.5 px-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-200 transition"
+              className="inline-flex items-center gap-2 py-2.5 px-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-200 transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
             >
               <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
                 <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" />
@@ -236,9 +236,9 @@ export default function MyRequestsPage() {
             </p>
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 py-2.5 px-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-200 transition"
+              className="inline-flex items-center gap-1.5 py-2.5 px-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-200 transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
             >
-              เลือกอุปกรณ์ที่ต้องการยืม
+              เลือกยืมอุปกรณ์ทันที
             </Link>
           </div>
         ) : (
@@ -251,7 +251,7 @@ export default function MyRequestsPage() {
               return (
                 <div
                   key={req.id}
-                  className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 p-4 sm:p-6 shadow-xs hover:shadow-md transition space-y-3 sm:space-y-4"
+                  className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 p-4 sm:p-6 shadow-xs hover:shadow-md transition space-y-3 sm:space-y-4 [content-visibility:auto]"
                 >
                   {/* Top Bar */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-slate-100">
@@ -263,28 +263,29 @@ export default function MyRequestsPage() {
                         <span>ส่งคำขอ: {formatDateTime(req.created_at)}</span>
                         <span>•</span>
                         <span>กลุ่ม: {req.user_group}</span>
-                        {req.department_or_unit && (
+                        {req.department_or_unit ? (
                           <>
                             <span>•</span>
                             <span className="text-indigo-600 font-medium">
                               {req.department_or_unit}
                             </span>
                           </>
-                        )}
+                        ) : null}
                       </div>
                     </div>
                     <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
                       {getStatusBadge(req.status)}
-                      {isPending && (
+                      {isPending ? (
                         <button
                           onClick={() => handleOpenCancelModal(req)}
-                          className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-full text-xs font-bold transition flex items-center gap-1"
+                          aria-label={`ยกเลิกคำขอยืม #${req.id.substring(0, 8).toUpperCase()}`}
+                          className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-full text-xs font-bold transition flex items-center gap-1 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
                           title="ยกเลิกคำขอนี้"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                           <span>ยกเลิกคำขอ</span>
                         </button>
-                      )}
+                      ) : null}
                     </div>
                   </div>
 
@@ -303,7 +304,7 @@ export default function MyRequestsPage() {
                   </div>
 
                   {/* Rejection Note */}
-                  {isRejected && req.admin_note && (
+                  {isRejected && req.admin_note ? (
                     <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-900 flex items-start gap-2">
                       <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
                       <div>
@@ -311,23 +312,23 @@ export default function MyRequestsPage() {
                         <span>{req.admin_note}</span>
                       </div>
                     </div>
-                  )}
+                  ) : null}
 
                   {/* Approved Notice with Contact Instruction */}
-                  {isApproved && (
+                  {isApproved ? (
                     <div className="p-3.5 bg-emerald-50/60 border border-emerald-200 rounded-2xl text-xs text-emerald-900 flex items-start gap-2.5">
                       <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                       <div className="space-y-1">
                         <p className="font-bold">
                           คำขอนี้ได้รับการอนุมัติแล้ว{' '}
-                          {req.pickup_time && `(เวลานัดรับของ: ${req.pickup_time})`}
+                          {req.pickup_time ? `(เวลานัดรับของ: ${req.pickup_time})` : ''}
                         </p>
                         <p className="text-[11px] text-emerald-700 font-normal">
                           กรุณานำบัตรประจำตัวมารับอุปกรณ์ตามวันและเวลาที่นัดหมาย หากต้องการยกเลิกหรือเปลี่ยนแปลงกำหนดการ กรุณาติดต่อเจ้าหน้าที่ดูแลห้องอุปกรณ์โดยตรง
                         </p>
                       </div>
                     </div>
-                  )}
+                  ) : null}
 
                   {/* Items List */}
                   <div>

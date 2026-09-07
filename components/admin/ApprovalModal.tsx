@@ -110,19 +110,20 @@ export default function ApprovalModal({
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition"
+            aria-label="ปิดหน้าต่าง"
+            className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 active:scale-95"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Error Alert */}
-        {errorMsg && (
+        {errorMsg ? (
           <div className="mb-4 p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-xl flex items-center gap-2">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             <p>{errorMsg}</p>
           </div>
-        )}
+        ) : null}
 
         {mode === 'approve' ? (
           <form onSubmit={handleApproveSubmit} className="space-y-4">
@@ -195,14 +196,14 @@ export default function ApprovalModal({
                 type="button"
                 onClick={onClose}
                 disabled={submitting}
-                className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 transition"
+                className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
               >
                 ยกเลิก
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-200 transition disabled:opacity-50 flex items-center justify-center gap-1.5"
+                className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-200 transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:opacity-50 flex items-center justify-center gap-1.5"
               >
                 <CheckCircle className="w-4 h-4" />
                 <span>{submitting ? 'กำลังบันทึก...' : 'ยืนยันการอนุมัติ'}</span>
@@ -235,14 +236,14 @@ export default function ApprovalModal({
                 type="button"
                 onClick={onClose}
                 disabled={submitting}
-                className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 transition"
+                className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
               >
                 ยกเลิก
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-md shadow-rose-200 transition disabled:opacity-50 flex items-center justify-center gap-1.5"
+                className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-md shadow-rose-200 transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 disabled:opacity-50 flex items-center justify-center gap-1.5"
               >
                 <XCircle className="w-4 h-4" />
                 <span>{submitting ? 'กำลังบันทึก...' : 'ยืนยันการไม่อนุมัติ'}</span>

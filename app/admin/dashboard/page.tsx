@@ -588,8 +588,7 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Requests Sub-Filter Panel */}
-        {/* Requests Sub-Filter Panel */}
-        {activeTab === 'requests' && (
+        {activeTab === 'requests' ? (
           <div className="bg-white rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 border border-slate-200/80 shadow-xs mb-5 sm:mb-6 space-y-3">
             {/* Row 1: Status Filter Tabs with Badges */}
             <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1.5 scrollbar-none -mx-3.5 px-3.5 sm:mx-0 sm:px-0">
@@ -607,7 +606,7 @@ export default function AdminDashboardPage() {
                 <button
                   key={st.value}
                   onClick={() => setStatusFilter(st.value)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition flex items-center gap-1.5 ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition flex items-center gap-1.5 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
                     statusFilter === st.value
                       ? 'bg-indigo-600 text-white shadow-xs'
                       : 'bg-slate-50 border border-slate-200/80 text-slate-600 hover:bg-slate-100'
@@ -668,7 +667,7 @@ export default function AdminDashboardPage() {
                   </select>
 
                   {/* Month Picker */}
-                  {dateFilterMode === 'month' && (
+                  {dateFilterMode === 'month' ? (
                     <div className="flex items-center gap-1">
                       <input
                         type="month"
@@ -676,21 +675,21 @@ export default function AdminDashboardPage() {
                         onChange={(e) => setSelectedMonth(e.target.value)}
                         className="py-1 px-2.5 bg-white border border-slate-200 rounded-lg text-slate-700 font-semibold text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 shadow-xs"
                       />
-                      {selectedMonth !== todayStr.slice(0, 7) && (
+                      {selectedMonth !== todayStr.slice(0, 7) ? (
                         <button
                           type="button"
                           onClick={() => setSelectedMonth(todayStr.slice(0, 7))}
-                          className="px-2 py-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-md font-semibold text-[11px] whitespace-nowrap transition"
+                          className="px-2 py-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-md font-semibold text-[11px] whitespace-nowrap transition active:scale-95"
                           title="เลือกเดือนปัจจุบัน"
                         >
                           เดือนนี้
                         </button>
-                      )}
+                      ) : null}
                     </div>
-                  )}
+                  ) : null}
 
                   {/* Specific Date Picker */}
-                  {dateFilterMode === 'date' && (
+                  {dateFilterMode === 'date' ? (
                     <div className="flex items-center gap-1">
                       <input
                         type="date"
@@ -698,21 +697,21 @@ export default function AdminDashboardPage() {
                         onChange={(e) => setSelectedDate(e.target.value)}
                         className="py-1 px-2.5 bg-white border border-slate-200 rounded-lg text-slate-700 font-semibold text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 shadow-xs"
                       />
-                      {selectedDate !== todayStr && (
+                      {selectedDate !== todayStr ? (
                         <button
                           type="button"
                           onClick={() => setSelectedDate(todayStr)}
-                          className="px-2 py-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-md font-semibold text-[11px] whitespace-nowrap transition"
+                          className="px-2 py-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-md font-semibold text-[11px] whitespace-nowrap transition active:scale-95"
                           title="เลือกวันนี้"
                         >
                           วันนี้
                         </button>
-                      )}
+                      ) : null}
                     </div>
-                  )}
+                  ) : null}
 
                   {/* Date Range Picker */}
-                  {dateFilterMode === 'range' && (
+                  {dateFilterMode === 'range' ? (
                     <div className="flex items-center gap-1">
                       <input
                         type="date"
@@ -730,10 +729,10 @@ export default function AdminDashboardPage() {
                         title="ถึงวันที่"
                       />
                     </div>
-                  )}
+                  ) : null}
 
                   {/* Date Target Field (Only shown when date filtering is active) */}
-                  {dateFilterMode !== 'ALL' && (
+                  {dateFilterMode !== 'ALL' ? (
                     <div className="flex items-center gap-1 pl-1 border-l border-slate-200">
                       <span className="text-slate-400 whitespace-nowrap">อิงตาม:</span>
                       <select
@@ -746,7 +745,7 @@ export default function AdminDashboardPage() {
                         <option value="return_date">กำหนดคืน</option>
                       </select>
                     </div>
-                  )}
+                  ) : null}
                 </div>
 
                 {/* Sort By Filter */}
@@ -773,33 +772,33 @@ export default function AdminDashboardPage() {
                 <span className="text-slate-400 whitespace-nowrap">
                   พบ <strong className="text-slate-700">{filteredRequests.length}</strong> รายการ
                 </span>
-                {hasActiveFilters && (
+                {hasActiveFilters ? (
                   <button
                     onClick={resetFilters}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-lg font-bold whitespace-nowrap transition text-xs"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-lg font-bold whitespace-nowrap transition text-xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
                   >
                     <X className="w-3.5 h-3.5" />
                     <span>ล้างตัวกรอง</span>
                   </button>
-                )}
+                ) : null}
               </div>
             </div>
           </div>
-        )}
+        ) : null}
 
         {/* Tab 1: Requests Table */}
-        {activeTab === 'requests' && (
+        {activeTab === 'requests' ? (
           <BorrowHistoryTable
             records={filteredRequests}
-            onOpenApproval={(req, mode) =>
+            onOpenApproval={(req: BorrowRequest, mode: 'approve' | 'reject') =>
               setApprovalModalState({ isOpen: true, mode, request: req })
             }
             onReturnRecord={handleOpenReturnModal}
           />
-        )}
+        ) : null}
 
         {/* Tab 2: Item Stock Table */}
-        {activeTab === 'items' && (
+        {activeTab === 'items' ? (
           <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
             {/* Mobile Card View (md:hidden) */}
             <div className="md:hidden divide-y divide-slate-100">
@@ -810,7 +809,7 @@ export default function AdminDashboardPage() {
                 </div>
               ) : (
                 filteredItems.map((it) => (
-                  <div key={it.id} className="p-4 flex items-center justify-between gap-3">
+                  <div key={it.id} className="p-4 flex items-center justify-between gap-3 [content-visibility:auto]">
                     <div className="flex items-center gap-3 min-w-0 flex-1">
                       <div className="w-14 h-14 rounded-2xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
                         {it.image_url ? (
@@ -841,11 +840,11 @@ export default function AdminDashboardPage() {
                             สต็อก: {it.available_quantity}/{it.total_quantity} ชิ้น
                           </span>
                         </div>
-                        {it.description && (
+                        {it.description ? (
                           <div className="text-[11px] text-slate-400 truncate mt-1">
                             {it.description}
                           </div>
-                        )}
+                        ) : null}
                       </div>
                     </div>
 
@@ -856,14 +855,16 @@ export default function AdminDashboardPage() {
                           setEditingItem(it);
                           setIsItemModalOpen(true);
                         }}
-                        className="p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition"
+                        aria-label={`แก้ไขข้อมูล ${it.name}`}
+                        className="p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                         title="แก้ไขข้อมูล"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleOpenDeleteModal(it)}
-                        className="p-2 text-rose-600 hover:bg-rose-50 rounded-xl transition"
+                        aria-label={`ลบอุปกรณ์ ${it.name}`}
+                        className="p-2 text-rose-600 hover:bg-rose-50 rounded-xl transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
                         title="ลบอุปกรณ์"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -896,7 +897,7 @@ export default function AdminDashboardPage() {
                     </tr>
                   ) : (
                     filteredItems.map((it) => (
-                      <tr key={it.id} className="hover:bg-slate-50/70 transition">
+                      <tr key={it.id} className="hover:bg-slate-50/70 transition [content-visibility:auto]">
                         <td className="p-4 sm:px-6 w-20">
                           <div className="w-14 h-14 rounded-2xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center">
                             {it.image_url ? (
@@ -939,14 +940,16 @@ export default function AdminDashboardPage() {
                                 setEditingItem(it);
                                 setIsItemModalOpen(true);
                               }}
-                              className="p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition"
+                              aria-label={`แก้ไขข้อมูล ${it.name}`}
+                              className="p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                               title="แก้ไขข้อมูล"
                             >
                               <Edit2 className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleOpenDeleteModal(it)}
-                              className="p-2 text-rose-600 hover:bg-rose-50 rounded-xl transition"
+                              aria-label={`ลบอุปกรณ์ ${it.name}`}
+                              className="p-2 text-rose-600 hover:bg-rose-50 rounded-xl transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
                               title="ลบอุปกรณ์"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -960,7 +963,7 @@ export default function AdminDashboardPage() {
               </table>
             </div>
           </div>
-        )}
+        ) : null}
       </main>
 
       {/* Item Manager Modal */}

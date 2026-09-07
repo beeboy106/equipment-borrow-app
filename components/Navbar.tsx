@@ -71,16 +71,17 @@ export default function Navbar() {
         {/* Right Actions */}
         <div className="flex items-center gap-1 sm:gap-2.5 shrink-0">
           {/* My Requests Link (if logged in) */}
-          {user && (
+          {user ? (
             <Link
               href="/my-requests"
-              className="flex items-center gap-1.5 p-2 sm:py-2.5 sm:px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 text-slate-700 transition font-bold text-xs shadow-xs"
+              className="flex items-center gap-1.5 p-2 sm:py-2.5 sm:px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 text-slate-700 transition font-bold text-xs shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
               title="คำขอของฉัน"
+              aria-label="ดูคำขอของฉัน"
             >
               <Clock className="w-4 h-4 text-indigo-600 shrink-0" />
               <span className="hidden sm:inline">คำขอของฉัน</span>
             </Link>
-          )}
+          ) : null}
 
           {/* Cart Trigger */}
           <button
@@ -99,7 +100,7 @@ export default function Navbar() {
           </button>
 
           {/* User Profile / Login */}
-          {!loading && (
+          {!loading ? (
             <>
               {user ? (
                 <div className="flex items-center gap-1 sm:gap-2 pl-1 sm:pl-2 border-l border-slate-200">
@@ -141,8 +142,9 @@ export default function Navbar() {
 
                   <button
                     onClick={handleLogout}
-                    className="p-1.5 sm:p-2 text-slate-400 hover:text-rose-600 transition rounded-xl hover:bg-rose-50"
+                    className="p-1.5 sm:p-2 text-slate-400 hover:text-rose-600 transition rounded-xl hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
                     title="ออกจากระบบ"
+                    aria-label="ออกจากระบบ"
                   >
                     <LogOut className="w-4 h-4" />
                   </button>
@@ -150,7 +152,7 @@ export default function Navbar() {
               ) : (
                 <button
                   onClick={handleGoogleLogin}
-                  className="flex items-center gap-1.5 sm:gap-2 py-2 sm:py-2.5 px-2.5 sm:px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white transition font-bold text-xs shadow-md shadow-indigo-200 shrink-0"
+                  className="flex items-center gap-1.5 sm:gap-2 py-2 sm:py-2.5 px-2.5 sm:px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white transition font-bold text-xs shadow-md shadow-indigo-200 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                 >
                   <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current shrink-0" viewBox="0 0 24 24">
                     <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" />
@@ -159,7 +161,7 @@ export default function Navbar() {
                 </button>
               )}
             </>
-          )}
+          ) : null}
         </div>
       </div>
     </header>

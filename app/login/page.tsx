@@ -70,12 +70,12 @@ export default function UserLoginPage() {
         </div>
 
         {/* Error Alert */}
-        {errorMsg && (
+        {errorMsg ? (
           <div className="mb-5 p-3.5 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-2xl flex items-center gap-2">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             <p>{errorMsg}</p>
           </div>
-        )}
+        ) : null}
 
         {/* Login Box */}
         <div className="space-y-4">
@@ -89,7 +89,7 @@ export default function UserLoginPage() {
           <button
             onClick={handleGoogleLogin}
             disabled={loading}
-            className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md shadow-indigo-200 transition duration-150 disabled:opacity-50 text-sm flex items-center justify-center gap-2.5"
+            className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md shadow-indigo-200 transition duration-150 disabled:opacity-50 text-sm flex items-center justify-center gap-2.5 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
           >
             {loading ? (
               <span>กำลังนำทางสู่ Google...</span>

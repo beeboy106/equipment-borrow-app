@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { BorrowRequest } from '@/lib/types';
 import { formatDate, formatDateTime } from '@/lib/utils';
 import {
@@ -25,7 +25,7 @@ interface BorrowHistoryTableProps {
   onReturnRecord: (request: BorrowRequest) => void;
 }
 
-export default function BorrowHistoryTable({
+function BorrowHistoryTableComponent({
   records,
   onOpenApproval,
   onReturnRecord,
@@ -175,11 +175,11 @@ export default function BorrowHistoryTable({
                         <span className="px-2 py-0.5 rounded-md bg-zinc-100 text-[11px] font-semibold text-zinc-700 whitespace-nowrap">
                           {rec.user_group}
                         </span>
-                        {rec.department_or_unit && (
+                        {rec.department_or_unit ? (
                           <span className="px-2 py-0.5 rounded-md bg-indigo-50 text-[11px] font-medium text-indigo-700 border border-indigo-100/80 whitespace-nowrap truncate max-w-[170px]">
                             {rec.department_or_unit}
                           </span>
-                        )}
+                        ) : null}
                       </div>
                     </div>
                   </div>
@@ -249,7 +249,7 @@ export default function BorrowHistoryTable({
                   </div>
 
                   {/* Expanded Accordion Details */}
-                  {isExpanded && (
+                  {isExpanded ? (
                     <div className="pt-1">
                       <div className="p-3 bg-slate-50/90 rounded-xl border border-slate-200/80 text-xs space-y-2 text-zinc-600 animate-in fade-in duration-200">
                         <div className="flex items-center gap-2">
@@ -276,7 +276,7 @@ export default function BorrowHistoryTable({
                             <span className="text-zinc-400">-</span>
                           )}
                         </div>
-                        {rec.purpose && (
+                        {rec.purpose ? (
                           <div className="flex items-start gap-2 pt-1.5 border-t border-slate-200/60">
                             <FileText className="w-3.5 h-3.5 text-zinc-400 shrink-0 mt-0.5" />
                             <div>
@@ -284,36 +284,36 @@ export default function BorrowHistoryTable({
                               <span className="text-zinc-800">{rec.purpose}</span>
                             </div>
                           </div>
-                        )}
-                        {rec.pickup_time && (
+                        ) : null}
+                        {rec.pickup_time ? (
                           <div className="flex items-center gap-2 text-indigo-700 font-medium pt-1.5 border-t border-slate-200/60">
                             <Clock className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
                             <span>เวลานัดรับของ: {rec.pickup_time}</span>
                           </div>
-                        )}
+                        ) : null}
                         <div className="flex items-center gap-2 text-[11px] text-zinc-400 pt-1.5 border-t border-slate-200/60">
                           <Calendar className="w-3 h-3 text-zinc-400 shrink-0" />
                           <span>ยื่นคำขอเมื่อ: {formatDateTime(rec.created_at)}</span>
                         </div>
-                        {isRejected && rec.admin_note && (
+                        {isRejected && rec.admin_note ? (
                           <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-lg text-rose-800 text-xs">
                             <strong className="block mb-0.5">เหตุผลที่ไม่อนุมัติ:</strong>
                             <span>{rec.admin_note}</span>
                           </div>
-                        )}
+                        ) : null}
                       </div>
                     </div>
-                  )}
+                  ) : null}
                 </div>
 
                 {/* 3. Dedicated Tinted Action Footer */}
                 <div className="px-4 py-3 bg-slate-50/90 border-t border-slate-100 flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 flex-1">
-                    {isPending && (
+                    {isPending ? (
                       <>
                         <button
                           onClick={() => onOpenApproval(rec, 'approve')}
-                          className="flex-1 py-2 px-3 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-xs transition flex items-center justify-center gap-1.5 whitespace-nowrap"
+                          className="flex-1 py-2 px-3 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-xs transition flex items-center justify-center gap-1.5 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
                           title="อนุมัติคำขอ"
                         >
                           <CheckCircle className="w-3.5 h-3.5 shrink-0" />
@@ -321,43 +321,44 @@ export default function BorrowHistoryTable({
                         </button>
                         <button
                           onClick={() => onOpenApproval(rec, 'reject')}
-                          className="flex-1 py-2 px-3 bg-white hover:bg-rose-50 text-rose-700 border border-rose-200 hover:border-rose-300 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 whitespace-nowrap shadow-xs"
+                          className="flex-1 py-2 px-3 bg-white hover:bg-rose-50 active:scale-95 text-rose-700 border border-rose-200 hover:border-rose-300 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 whitespace-nowrap shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
                           title="ไม่อนุมัติคำขอ"
                         >
                           <XCircle className="w-3.5 h-3.5 shrink-0" />
                           <span>ไม่อนุมัติ</span>
                         </button>
                       </>
-                    )}
+                    ) : null}
 
-                    {isApproved && (
+                    {isApproved ? (
                       <button
                         onClick={() => onReturnRecord(rec)}
-                        className="flex-1 py-2 px-3 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-xs font-bold shadow-xs transition flex items-center justify-center gap-1.5 whitespace-nowrap"
+                        className="flex-1 py-2 px-3 bg-zinc-900 hover:bg-zinc-800 active:scale-95 text-white rounded-xl text-xs font-bold shadow-xs transition flex items-center justify-center gap-1.5 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500"
                         title="รับคืนอุปกรณ์"
                       >
                         <RotateCcw className="w-3.5 h-3.5 shrink-0" />
                         <span>กดรับคืน</span>
                       </button>
-                    )}
+                    ) : null}
 
-                    {isReturned && (
+                    {isReturned ? (
                       <span className="text-xs text-zinc-400 font-medium whitespace-nowrap py-1">คืนแล้วเรียบร้อย</span>
-                    )}
+                    ) : null}
 
-                    {isRejected && (
+                    {isRejected ? (
                       <span className="text-xs text-rose-400 font-medium whitespace-nowrap py-1">ไม่อนุมัติ</span>
-                    )}
+                    ) : null}
 
-                    {isCancelled && (
+                    {isCancelled ? (
                       <span className="text-xs text-slate-400 font-medium whitespace-nowrap py-1">ยกเลิกแล้ว</span>
-                    )}
+                    ) : null}
                   </div>
 
                   {/* Expand / Collapse Button */}
                   <button
                     onClick={() => toggleExpand(rec.id)}
-                    className="py-2 px-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 text-xs font-semibold flex items-center gap-1 transition shrink-0 shadow-xs"
+                    aria-label={isExpanded ? 'ซ่อนรายละเอียด' : 'ดูรายละเอียดเพิ่มเติม'}
+                    className="py-2 px-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 text-xs font-semibold flex items-center gap-1 transition shrink-0 shadow-xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                     title={isExpanded ? 'ซ่อนรายละเอียด' : 'ดูรายละเอียดเพิ่มเติม'}
                   >
                     <span>{isExpanded ? 'ซ่อน' : 'รายละเอียด'}</span>
@@ -413,7 +414,7 @@ export default function BorrowHistoryTable({
                 return (
                   <tr
                     key={rec.id}
-                    className={`transition ${
+                    className={`transition [content-visibility:auto] ${
                       isOverdue
                         ? 'bg-amber-50/40 hover:bg-amber-50/70'
                         : 'hover:bg-zinc-50/70'
@@ -426,11 +427,11 @@ export default function BorrowHistoryTable({
                         <span className="px-2 py-0.5 rounded-md bg-zinc-100 text-[11px] font-semibold text-zinc-700 whitespace-nowrap">
                           {rec.user_group}
                         </span>
-                        {rec.department_or_unit && (
+                        {rec.department_or_unit ? (
                           <span className="px-2 py-0.5 rounded-md bg-indigo-50 text-[11px] font-medium text-indigo-700 border border-indigo-100/80 whitespace-nowrap">
                             {rec.department_or_unit}
                           </span>
-                        )}
+                        ) : null}
                       </div>
                       <div className="text-xs text-zinc-400 mt-1.5 space-y-0.5">
                         <div className="truncate max-w-[190px]">{rec.borrower_email}</div>
@@ -474,17 +475,17 @@ export default function BorrowHistoryTable({
                       <p className="text-xs text-zinc-700 leading-relaxed max-w-[180px] break-words">
                         {rec.purpose || '-'}
                       </p>
-                      {isRejected && rec.admin_note && (
+                      {isRejected && rec.admin_note ? (
                         <div className="mt-2 p-2 bg-rose-50 border border-rose-200 rounded-lg text-[11px] text-rose-800 leading-snug">
                           <span className="font-bold">เหตุผลที่ไม่อนุมัติ: </span>
                           <span>{rec.admin_note}</span>
                         </div>
-                      )}
-                      {rec.pickup_time && (
+                      ) : null}
+                      {rec.pickup_time ? (
                         <div className="mt-1.5 text-[11px] text-indigo-700 font-medium">
                           นัดรับของ: {rec.pickup_time}
                         </div>
-                      )}
+                      ) : null}
                     </td>
 
                     {/* 4. Dates */}
@@ -516,11 +517,11 @@ export default function BorrowHistoryTable({
                     {/* 6. Action Buttons */}
                     <td className="py-4 px-5 align-top text-center">
                       <div className="flex items-center justify-center gap-1.5 flex-nowrap">
-                        {isPending && (
+                        {isPending ? (
                           <>
                             <button
                               onClick={() => onOpenApproval(rec, 'approve')}
-                              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs transition flex items-center justify-center gap-1 whitespace-nowrap"
+                              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-xs transition flex items-center justify-center gap-1 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
                               title="อนุมัติคำขอ"
                             >
                               <CheckCircle className="w-3.5 h-3.5 shrink-0" />
@@ -528,36 +529,36 @@ export default function BorrowHistoryTable({
                             </button>
                             <button
                               onClick={() => onOpenApproval(rec, 'reject')}
-                              className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 whitespace-nowrap"
+                              className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 active:scale-95 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
                               title="ไม่อนุมัติ"
                             >
                               <XCircle className="w-3.5 h-3.5 shrink-0" />
                               <span>ไม่อนุมัติ</span>
                             </button>
                           </>
-                        )}
+                        ) : null}
 
-                        {isApproved && (
+                        {isApproved ? (
                           <button
                             onClick={() => onReturnRecord(rec)}
-                            className="px-3.5 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-xs font-bold shadow-xs transition flex items-center justify-center gap-1.5 whitespace-nowrap"
+                            className="px-3.5 py-1.5 bg-zinc-900 hover:bg-zinc-800 active:scale-95 text-white rounded-xl text-xs font-bold shadow-xs transition flex items-center justify-center gap-1.5 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500"
                           >
                             <RotateCcw className="w-3.5 h-3.5 shrink-0" />
                             <span>กดรับคืน</span>
                           </button>
-                        )}
+                        ) : null}
 
-                        {isReturned && (
+                        {isReturned ? (
                           <span className="text-xs text-zinc-400 font-medium whitespace-nowrap">คืนแล้วเรียบร้อย</span>
-                        )}
+                        ) : null}
 
-                        {isRejected && (
+                        {isRejected ? (
                           <span className="text-xs text-rose-400 font-medium whitespace-nowrap">ไม่อนุมัติ</span>
-                        )}
+                        ) : null}
 
-                        {isCancelled && (
+                        {isCancelled ? (
                           <span className="text-xs text-slate-400 font-medium whitespace-nowrap">ยกเลิกแล้ว</span>
-                        )}
+                        ) : null}
                       </div>
                     </td>
                   </tr>
@@ -571,3 +572,6 @@ export default function BorrowHistoryTable({
   </div>
 );
 }
+
+const BorrowHistoryTable = memo(BorrowHistoryTableComponent);
+export default BorrowHistoryTable;

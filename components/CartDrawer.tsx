@@ -37,7 +37,8 @@ export default function CartDrawer({ onOpenCheckout }: CartDrawerProps) {
           </div>
           <button
             onClick={() => setIsCartOpen(false)}
-            className="p-2 rounded-xl hover:bg-slate-200 text-slate-500 transition"
+            className="p-2 rounded-xl hover:bg-slate-200 text-slate-500 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            aria-label="ปิดหน้าต่างตะกร้า"
           >
             <X className="w-5 h-5" />
           </button>
@@ -106,7 +107,7 @@ export default function CartDrawer({ onOpenCheckout }: CartDrawerProps) {
         </div>
 
         {/* Footer Actions */}
-        {cart.length > 0 && (
+        {cart.length > 0 ? (
           <div className="p-3.5 sm:p-5 border-t border-slate-200 bg-slate-50 space-y-2.5 sm:space-y-3">
             <div className="flex justify-between items-center text-xs sm:text-sm font-semibold">
               <span className="text-slate-600">จำนวนที่ขอยืมทั้งหมด</span>
@@ -116,7 +117,7 @@ export default function CartDrawer({ onOpenCheckout }: CartDrawerProps) {
             <div className="flex gap-2">
               <button
                 onClick={clearCart}
-                className="py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-200 text-xs font-bold transition whitespace-nowrap"
+                className="py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-200 active:scale-95 text-xs font-bold transition whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
               >
                 ล้างตะกร้า
               </button>
@@ -125,14 +126,14 @@ export default function CartDrawer({ onOpenCheckout }: CartDrawerProps) {
                   setIsCartOpen(false);
                   onOpenCheckout();
                 }}
-                className="flex-1 py-2.5 sm:py-3 px-3 sm:px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs sm:text-sm shadow-md shadow-indigo-200 transition flex items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap"
+                className="flex-1 py-2.5 sm:py-3 px-3 sm:px-4 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl font-bold text-xs sm:text-sm shadow-md shadow-indigo-200 transition flex items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
               >
                 <span>กรอกข้อมูลยืนยันการยืม</span>
                 <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

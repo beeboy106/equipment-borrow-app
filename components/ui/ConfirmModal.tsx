@@ -69,7 +69,8 @@ export default function ConfirmModal({
           <button
             onClick={onClose}
             disabled={isLoading}
-            className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition shrink-0 -mr-1 -mt-1"
+            aria-label="ปิดหน้าต่าง"
+            className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition shrink-0 -mr-1 -mt-1 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
           >
             <X className="w-4 h-4" />
           </button>
@@ -80,7 +81,7 @@ export default function ConfirmModal({
             type="button"
             onClick={onClose}
             disabled={isLoading}
-            className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 transition disabled:opacity-50"
+            className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 transition disabled:opacity-50 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           >
             {cancelText}
           </button>
@@ -88,11 +89,11 @@ export default function ConfirmModal({
             type="button"
             onClick={onConfirm}
             disabled={isLoading}
-            className={`flex-1 py-2.5 rounded-xl font-bold text-xs shadow-md transition disabled:opacity-50 flex items-center justify-center gap-2 ${iconConfig.btn}`}
+            className={`flex-1 py-2.5 rounded-xl font-bold text-xs shadow-md transition disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${iconConfig.btn}`}
           >
-            {isLoading && (
+            {isLoading ? (
               <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            )}
+            ) : null}
             <span>{confirmText}</span>
           </button>
         </div>

@@ -50,7 +50,7 @@ export default function AdminLoginPage() {
         {/* Back Link */}
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-indigo-600 mb-6 transition"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-indigo-600 mb-6 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded-lg"
         >
           <ArrowLeft className="w-4 h-4" /> กลับสู่หน้าแรก
         </Link>
@@ -67,12 +67,12 @@ export default function AdminLoginPage() {
         </div>
 
         {/* Error Alert */}
-        {errorMsg && (
+        {errorMsg ? (
           <div className="mb-5 p-3.5 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-2xl flex items-center gap-2">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             <p>{errorMsg}</p>
           </div>
-        )}
+        ) : null}
 
         {/* Login Form */}
         <form onSubmit={handleLogin} className="space-y-4">
@@ -113,7 +113,7 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md shadow-indigo-200 transition duration-150 disabled:opacity-50 text-sm mt-3 flex items-center justify-center gap-2"
+            className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md shadow-indigo-200 transition duration-150 disabled:opacity-50 text-sm mt-3 flex items-center justify-center gap-2 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
           >
             {loading
               ? isRegisterMode

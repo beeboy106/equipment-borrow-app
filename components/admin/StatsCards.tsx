@@ -8,7 +8,7 @@ interface StatsCardsProps {
   stats: StatsSummary;
 }
 
-export default function StatsCards({ stats }: StatsCardsProps) {
+const StatsCards = React.memo(function StatsCards({ stats }: StatsCardsProps) {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 mb-6 sm:mb-8">
       {/* 1. รอการอนุมัติ */}
@@ -68,4 +68,6 @@ export default function StatsCards({ stats }: StatsCardsProps) {
       </div>
     </div>
   );
-}
+});
+
+export default StatsCards;
