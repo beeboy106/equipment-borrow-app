@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { subscribeAuth, loginWithGoogle } from '@/lib/firebase/authService';
 import { useRouter } from 'next/navigation';
-import { Layers, AlertCircle } from 'lucide-react';
+import { PackageCheck, AlertCircle } from 'lucide-react';
 
 export default function UserLoginPage() {
   const router = useRouter();
@@ -61,7 +61,7 @@ export default function UserLoginPage() {
         {/* Header Icon & Title */}
         <div className="text-center mb-8">
           <div className="w-14 h-14 bg-gradient-to-tr from-indigo-600 to-violet-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-3.5 shadow-lg shadow-indigo-200">
-            <Layers className="w-8 h-8" />
+            <PackageCheck className="w-8 h-8" />
           </div>
           <h1 className="text-2xl font-black text-slate-900">ระบบยืม-คืนอุปกรณ์</h1>
           <p className="text-xs text-slate-500 mt-1">

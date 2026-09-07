@@ -35,7 +35,7 @@ import {
   Search,
   ArrowUpRight,
   Package,
-  Layers,
+  PackageCheck,
   ShieldAlert,
   SlidersHorizontal,
   X,
@@ -459,7 +459,7 @@ export default function AdminDashboardPage() {
         <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 min-h-[64px] h-auto sm:h-20 py-2.5 sm:py-0 flex items-center justify-between gap-2 sm:gap-4">
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-200 shrink-0">
-              <Layers className="w-5 h-5" />
+              <PackageCheck className="w-5 h-5" />
             </div>
             <div className="min-w-0">
               <h1 className="font-extrabold text-slate-900 text-sm sm:text-lg leading-tight truncate sm:whitespace-normal">

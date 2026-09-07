@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { subscribeAuth, loginWithGoogle, logoutUser } from '@/lib/firebase/authService';
 import { useCartStore, selectTotalItemsCount } from '@/lib/store/cartStore';
-import { ShoppingBag, LogIn, LogOut, Clock, Layers } from 'lucide-react';
+import { ShoppingBag, LogIn, LogOut, Clock, PackageCheck } from 'lucide-react';
 import { User } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 
@@ -56,7 +56,7 @@ export default function Navbar() {
         {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-2 sm:gap-3 group shrink-0">
           <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-200 group-hover:scale-105 transition-transform duration-300 shrink-0">
-            <Layers className="w-4 h-4 sm:w-6 sm:h-6" />
+            <PackageCheck className="w-4 h-4 sm:w-6 sm:h-6" />
           </div>
           <div>
             <div className="font-extrabold text-slate-900 text-xs sm:text-lg leading-tight group-hover:text-indigo-600 transition-colors whitespace-nowrap">
