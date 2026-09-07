@@ -33,7 +33,16 @@ export default function UserLoginPage() {
       router.push('/');
     } catch (err: any) {
       console.error('Google login error:', err);
-      setErrorMsg(err.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย Google');
+      if (err.code === 'auth/popup-closed-by-user') {
+        setLoading(false);
+        return;
+      }
+      let msg = err.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย Google';
+      if (err.code === 'auth/unauthorized-domain') {
+        const domain = typeof window !== 'undefined' ? window.location.hostname : 'Vercel domain';
+        msg = `โดเมน "${domain}" ยังไม่ได้รับอนุญาตใน Firebase กรุณาเพิ่มใน Firebase Console -> Authentication -> Settings -> Authorized domains`;
+      }
+      setErrorMsg(msg);
       setLoading(false);
     }
   };

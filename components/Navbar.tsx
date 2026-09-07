@@ -31,8 +31,15 @@ export default function Navbar() {
     try {
       await loginWithGoogle();
       router.push('/');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Login error:', err);
+      if (err.code === 'auth/popup-closed-by-user') return;
+      if (err.code === 'auth/unauthorized-domain') {
+        const domain = typeof window !== 'undefined' ? window.location.hostname : 'Vercel domain';
+        alert(`โดเมน "${domain}" ยังไม่ได้รับอนุญาตใน Firebase Authentication\nกรุณาเพิ่มโดเมนนี้ที่ Firebase Console -> Authentication -> Settings -> Authorized domains`);
+      } else {
+        alert(err.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
+      }
     }
   };
 

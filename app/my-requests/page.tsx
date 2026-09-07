@@ -93,7 +93,13 @@ export default function MyRequestsPage() {
       await loginWithGoogle();
     } catch (err: any) {
       console.error('Login error:', err);
-      showToast('error', err.message || 'ไม่สามารถเข้าสู่ระบบด้วย Google ได้', 'เกิดข้อผิดพลาด');
+      if (err.code === 'auth/popup-closed-by-user') return;
+      let msg = err.message || 'ไม่สามารถเข้าสู่ระบบด้วย Google ได้';
+      if (err.code === 'auth/unauthorized-domain') {
+        const domain = typeof window !== 'undefined' ? window.location.hostname : 'Vercel domain';
+        msg = `โดเมน "${domain}" ยังไม่ได้รับอนุญาตใน Firebase กรุณาเพิ่มใน Firebase Console -> Authentication -> Settings -> Authorized domains`;
+      }
+      showToast('error', msg, 'เกิดข้อผิดพลาด');
     }
   };
 
