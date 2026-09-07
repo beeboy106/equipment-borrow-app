@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { CartProvider } from '@/context/CartContext';
+import ChunkErrorHandler from '@/components/ChunkErrorHandler';
 
 export const metadata: Metadata = {
   title: 'ระบบยืม-คืนอุปกรณ์สำหรับอาจารย์ในสาขาวิชา',
@@ -15,6 +16,7 @@ export default function RootLayout({
   return (
     <html lang="th">
       <body className="min-h-screen bg-slate-50 flex flex-col">
+        <ChunkErrorHandler />
         <CartProvider>
           {children}
         </CartProvider>
