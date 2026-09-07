@@ -118,9 +118,9 @@ export default function HomePage() {
         ) : null}
 
         {/* Search and Filters Bar */}
-        <div className="flex flex-col md:flex-row gap-3 sm:gap-4 justify-between items-stretch md:items-center mb-6 sm:mb-8 w-full min-w-0 max-w-full">
+        <div className="flex flex-col md:flex-row gap-3 sm:gap-4 justify-between items-stretch md:items-center mb-6 sm:mb-8 w-full min-w-0">
           {/* Search Input */}
-          <div className="relative flex-1 max-w-md w-full min-w-0">
+          <div className="relative w-full md:w-80 lg:w-96 shrink-0">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 sm:w-5 sm:h-5 pointer-events-none" />
             <input
               type="text"
@@ -132,7 +132,7 @@ export default function HomePage() {
           </div>
 
           {/* Categories Tab Pill */}
-          <div className="w-full min-w-0 max-w-full overflow-x-auto flex gap-1.5 sm:gap-2 pb-1 sm:pb-0 scrollbar-none touch-pan-x">
+          <div className="w-full md:w-auto overflow-x-auto flex gap-1.5 sm:gap-2 pb-1 sm:pb-0 scrollbar-none touch-pan-x shrink min-w-0">
             {categories.map((cat) => (
               <button
                 key={cat}
