@@ -6,6 +6,14 @@ import ChunkErrorHandler from '@/components/ChunkErrorHandler';
 export const metadata: Metadata = {
   title: 'ระบบยืม-คืนอุปกรณ์สำหรับอาจารย์ในสาขาวิชา',
   description: 'ระบบยืม-คืนอุปกรณ์ไอทีและสื่อการสอนสำหรับคณาจารย์และบุคลากร',
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: '/icon.svg',
+  },
 };
 
 export const viewport: Viewport = {

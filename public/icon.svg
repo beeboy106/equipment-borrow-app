@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <defs>
+    <linearGradient id="brandGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="100%" stop-color="#7c3aed" />
+    </linearGradient>
+  </defs>
+  <!-- Background with smooth rounded corners -->
+  <rect width="48" height="48" rx="12" fill="url(#brandGradient)" />
+  
+  <!-- Isometric 3D Package Box -->
+  <path d="M24 10L37 17.5L24 25L11 17.5L24 10Z" fill="white" fill-opacity="0.95" />
+  <path d="M11 17.5L24 25V38L11 30.5V17.5Z" fill="white" fill-opacity="0.75" />
+  <path d="M37 17.5L24 25V38L37 30.5V17.5Z" fill="white" fill-opacity="0.85" />
+  <path d="M24 10V25" stroke="#4f46e5" stroke-width="1.5" stroke-linejoin="round" />
+  
+  <!-- Checkmark Badge on front -->
+  <circle cx="24" cy="27" r="8.5" fill="#10b981" stroke="white" stroke-width="2" />
+  <path d="M20.5 27L23 29.5L27.5 24.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+</svg>
