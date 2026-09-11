@@ -7,6 +7,7 @@ import {
   fetchBorrowRequests as getRequestsFromFirestore,
   returnBorrowRequestTransaction,
   deleteItem as deleteItemFromFirestore,
+  checkIsAdmin,
 } from '@/lib/firebase/firestoreService';
 import { useRouter } from 'next/navigation';
 import { Item, BorrowRequest, StatsSummary } from '@/lib/types';
@@ -121,15 +122,13 @@ export default function AdminDashboardPage() {
         return;
       }
 
-      // ตรวจสอบว่าต้องเป็นบัญชีที่ Login ด้วย Email & Password ที่สร้างไว้ใน Firebase Auth เท่านั้น
-      const isEmailProvider =
-        user.providerData.some((p) => p.providerId === 'password') ||
-        Boolean(user.email && !user.providerData.some((p) => p.providerId === 'google.com'));
+      // ตรวจสอบสิทธิ์ผู้ดูแลระบบ (Admin)
+      const hasAdminRole = await checkIsAdmin(user.email);
 
-      if (!isEmailProvider) {
+      if (!hasAdminRole) {
         setIsAuthorized(false);
         setAuthError(
-          'บัญชีที่คุณเข้าสู่ระบบอยู่ในขณะนี้เป็นบัญชีผู้ใช้ทั่วไป (Google) ไม่มีสิทธิ์เข้าถึงส่วนผู้ดูแลระบบ กรุณาเข้าสู่ระบบด้วยบัญชีแอดมิน (Email & Password)'
+          `บัญชีที่คุณเข้าสู่ระบบอยู่ในขณะนี้ (${user.email || 'ไม่ระบุอีเมล'}) ยังไม่ได้รับสิทธิ์ผู้ดูแลระบบ กรุณาเข้าสู่ระบบด้วยบัญชีแอดมิน หรือลงทะเบียนยืนยันสิทธิ์ด้วย Admin Security Key`
         );
         setLoading(false);
         return;

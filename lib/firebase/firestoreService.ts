@@ -352,3 +352,64 @@ export async function cancelBorrowRequest(requestId: string): Promise<void> {
     updated_at: new Date().toISOString(),
   });
 }
+
+// ==========================================
+// 4. ADMIN ROLE & WHITELIST MANAGEMENT
+// ==========================================
+
+export const DEFAULT_ADMIN_EMAILS = [
+  '6710210106@psu.ac.th',
+  'thunwa02122547@gmail.com',
+];
+
+/**
+ * Checks whether an email has administrator privileges:
+ * 1. Checks default whitelist / NEXT_PUBLIC_ADMIN_EMAILS
+ * 2. Checks Firestore 'admins' collection
+ */
+export async function checkIsAdmin(email: string | null | undefined): Promise<boolean> {
+  if (!email) return false;
+  const cleanEmail = email.trim().toLowerCase();
+
+  const envAdmins = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || '')
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+
+  const allowedSet = new Set([...DEFAULT_ADMIN_EMAILS, ...envAdmins]);
+  if (allowedSet.has(cleanEmail)) {
+    return true;
+  }
+
+  try {
+    const adminDoc = await getDoc(doc(db, 'admins', cleanEmail));
+    return adminDoc.exists();
+  } catch (err) {
+    console.warn('Error checking admin role in Firestore:', err);
+    return false;
+  }
+}
+
+/**
+ * Grants administrator role to an email address in Firestore 'admins' collection
+ */
+export async function registerAdminEmail(email: string, userUid?: string): Promise<void> {
+  if (!email) return;
+  const cleanEmail = email.trim().toLowerCase();
+  try {
+    await setDoc(
+      doc(db, 'admins', cleanEmail),
+      {
+        email: cleanEmail,
+        user_id: userUid || null,
+        created_at: new Date().toISOString(),
+        role: 'admin',
+      },
+      { merge: true }
+    );
+  } catch (err) {
+    console.error('Error registering admin in Firestore:', err);
+    throw err;
+  }
+}
+
