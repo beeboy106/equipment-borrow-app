@@ -57,30 +57,30 @@ export default function UserLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-100 to-slate-200 flex items-center justify-center p-4 font-sans">
-      <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl p-8 sm:p-10 border border-slate-200 animate-in zoom-in-95 duration-200">
+    <div className="min-h-screen bg-gradient-to-b from-slate-100 to-slate-200 flex items-center justify-center p-4 sm:p-6 font-sans">
+      <div className="max-w-md w-full bg-white rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl p-6 sm:p-10 border border-slate-200 animate-in zoom-in-95 duration-200">
         {/* Header Icon & Title */}
-        <div className="text-center mb-8">
-          <div className="w-14 h-14 bg-gradient-to-tr from-indigo-600 to-violet-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-3.5 shadow-lg shadow-indigo-200">
-            <PackageCheck className="w-8 h-8" />
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-tr from-indigo-600 to-violet-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-3.5 shadow-lg shadow-indigo-200">
+            <PackageCheck className="w-7 h-7 sm:w-8 sm:h-8" />
           </div>
-          <h1 className="text-2xl font-black text-slate-900">ระบบยืม-คืนอุปกรณ์</h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900">ระบบยืม-คืนอุปกรณ์</h1>
+          <p className="text-[11px] sm:text-xs text-slate-500 mt-1">
             สาขาวิชาเทคโนโลยีสารสนเทศและคอมพิวเตอร์
           </p>
         </div>
 
         {/* Error Alert */}
         {errorMsg ? (
-          <div className="mb-5 p-3.5 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-2xl flex items-center gap-2">
+          <div className="mb-4 sm:mb-5 p-3 sm:p-3.5 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl sm:rounded-2xl flex items-center gap-2">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             <p>{errorMsg}</p>
           </div>
         ) : null}
 
         {/* Login Box */}
-        <div className="space-y-4">
-          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center">
+        <div className="space-y-3.5 sm:space-y-4">
+          <div className="p-3.5 sm:p-4 bg-slate-50 rounded-xl sm:rounded-2xl border border-slate-100 text-center">
             <p className="text-xs text-slate-600 leading-relaxed font-medium">
               สำหรับอาจารย์ นักศึกษา และบุคลากรภายในสาขา<br />
               กรุณาเข้าสู่ระบบด้วยบัญชี Google เพื่อใช้งานระบบ
@@ -90,7 +90,7 @@ export default function UserLoginPage() {
           <button
             onClick={handleGoogleLogin}
             disabled={loading}
-            className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md shadow-indigo-200 transition duration-150 disabled:opacity-50 text-sm flex items-center justify-center gap-2.5 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+            className="w-full py-3 sm:py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md shadow-indigo-200 transition duration-150 disabled:opacity-50 text-sm flex items-center justify-center gap-2.5 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
           >
             {loading ? (
               <span>กำลังนำทางสู่ Google...</span>
@@ -105,11 +105,11 @@ export default function UserLoginPage() {
           </button>
         </div>
 
-        <div className="mt-8 pt-5 border-t border-slate-100 flex flex-col items-center gap-2.5 text-xs text-slate-400">
+        <div className="mt-6 sm:mt-8 pt-4 sm:pt-5 border-t border-slate-100 flex flex-col items-center gap-2 text-center text-xs text-slate-400">
           <div>ระบบยืนยันตัวตนด้วย Google OAuth ผ่าน Google Firebase</div>
           <Link
             href="/admin/login"
-            className="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 font-semibold hover:underline transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
+            className="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 font-semibold hover:underline transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded text-[11px] sm:text-xs"
           >
             <ShieldCheck className="w-3.5 h-3.5" /> สำหรับผู้ดูแลระบบ เข้าสู่ระบบที่นี่ (Admin Login) &rarr;
           </Link>

@@ -119,6 +119,23 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
       return;
     }
 
+    // Validate ชื่อผู้ยืม (Required)
+    if (!formData.borrower_name.trim()) {
+      setErrorMessage('กรุณาระบุชื่อ-นามสกุลของผู้ขอยืม');
+      return;
+    }
+
+    // Validate เบอร์โทรศัพท์ (Required & 9-10 หลัก)
+    const cleanPhone = formData.phone.trim().replace(/[\s-]/g, '');
+    if (!cleanPhone) {
+      setErrorMessage('กรุณาระบุเบอร์โทรศัพท์สำหรับติดต่อ (บังคับ)');
+      return;
+    }
+    if (!/^(0\d{8,9}|\+66\d{8,9})$/.test(cleanPhone)) {
+      setErrorMessage('รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง (กรุณากรอกเบอร์ 9-10 หลัก เช่น 081-234-5678)');
+      return;
+    }
+
     // Validate สังกัด (Required)
     if (!formData.department_or_unit.trim()) {
       setErrorMessage(
@@ -126,6 +143,12 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
           ? 'กรุณาระบุหรือเลือกหน่วยงานของคุณ'
           : 'กรุณาระบุหรือเลือกภาควิชาของคุณ'
       );
+      return;
+    }
+
+    // Validate วัตถุประสงค์ (Required, ยอมรับ '-')
+    if (!formData.purpose.trim()) {
+      setErrorMessage('กรุณาระบุวัตถุประสงค์ในการยืม (สามารถพิมพ์เป็นเครื่องหมาย - ได้)');
       return;
     }
 
@@ -149,31 +172,31 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
       const requestId = await submitBorrowRequest(
         {
           user_id: user.uid,
-          borrower_name: formData.borrower_name,
-          borrower_email: formData.borrower_email,
-          phone: formData.phone,
+          borrower_name: formData.borrower_name.trim(),
+          borrower_email: formData.borrower_email.trim(),
+          phone: formData.phone.trim(),
           user_group: formData.user_group,
-          purpose: formData.purpose,
+          purpose: formData.purpose.trim(),
           use_date: formData.use_date,
           return_date: formData.return_date,
-          department_or_unit: formData.department_or_unit,
+          department_or_unit: formData.department_or_unit.trim(),
         },
         itemsPayload
       );
 
       // 2. เรียกส่งอีเมลแจ้งเตือนไปยังผู้ดูแลระบบ (Admin)
       try {
-        await fetch('/api/send-email', {
+        const emailRes = await fetch('/api/send-email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             requestId: requestId || 'REQ-' + Date.now(),
-            borrowerName: formData.borrower_name,
-            borrowerEmail: formData.borrower_email,
-            phone: formData.phone,
+            borrowerName: formData.borrower_name.trim(),
+            borrowerEmail: formData.borrower_email.trim(),
+            phone: formData.phone.trim(),
             userGroup: formData.user_group,
-            departmentOrUnit: formData.department_or_unit,
-            purpose: formData.purpose,
+            departmentOrUnit: formData.department_or_unit.trim(),
+            purpose: formData.purpose.trim(),
             useDate: formatDate(formData.use_date),
             returnDate: formatDate(formData.return_date),
             items: cart.map((c) => ({
@@ -183,6 +206,11 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
             adminUrl: 'https://equipment-borrow-app.vercel.app/admin',
           }),
         });
+
+        if (!emailRes.ok) {
+          const errData = await emailRes.json().catch(() => ({}));
+          console.warn('Email notification warning (non-200):', errData);
+        }
       } catch (emailErr) {
         console.warn('Failed to notify admin via email:', emailErr);
       }
@@ -423,7 +451,7 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
               <textarea
                 required
                 rows={2}
-                placeholder="เช่น ใช้จัดสอบปฏิบัติการวิชา CS102 / จัดกิจกรรมอบรม"
+                placeholder="เช่น ใช้จัดสอบปฏิบัติการ CS102 (หรือพิมพ์เครื่องหมาย - แทนได้)"
                 value={formData.purpose}
                 onChange={(e) => setFormData({ ...formData, purpose: e.target.value })}
                 className="w-full p-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"

@@ -46,8 +46,8 @@ export function isValidEmail(email: string): boolean {
  */
 export function isValidPhone(phone: string): boolean {
   if (!phone) return false;
-  const cleaned = phone.trim();
-  return /^[0-9+\s-]{8,20}$/.test(cleaned);
+  const cleaned = phone.trim().replace(/[\s-]/g, '');
+  return /^(0\d{8,9}|\+66\d{8,9}|\d{8,15})$/.test(cleaned);
 }
 
 // In-Memory Rate Limiter Map: key -> { count, resetTime }

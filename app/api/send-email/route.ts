@@ -54,12 +54,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'รายการอุปกรณ์เกินจำนวนสูงสุดที่อนุญาต (50 ชิ้น)' }, { status: 400 });
     }
 
-    if (borrowerEmail && !isValidEmail(borrowerEmail)) {
+    if (!borrowerEmail || !isValidEmail(borrowerEmail)) {
       return NextResponse.json({ error: 'รูปแบบอีเมลไม่ถูกต้อง' }, { status: 400 });
     }
 
-    if (phone && !isValidPhone(phone)) {
-      return NextResponse.json({ error: 'รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง' }, { status: 400 });
+    if (!phone || !isValidPhone(phone)) {
+      return NextResponse.json({ error: 'รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง (กรุณากรอก 9-10 หลัก)' }, { status: 400 });
+    }
+
+    if (!purpose || !purpose.trim()) {
+      return NextResponse.json({ error: 'กรุณาระบุวัตถุประสงค์ในการยืม (สามารถพิมพ์เป็นเครื่องหมาย - ได้)' }, { status: 400 });
     }
 
     const validatedItems = rawBody.items.map((i) => ({
