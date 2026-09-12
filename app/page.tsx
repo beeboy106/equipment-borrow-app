@@ -104,19 +104,16 @@ export default function HomePage() {
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-2.5 sm:px-6 lg:px-8 py-4 sm:py-10 min-w-0">
         {/* Banner Title Area */}
-        <div className="mb-5 sm:mb-8 bg-gradient-to-r from-indigo-900 via-indigo-800 to-indigo-950 rounded-2xl sm:rounded-3xl p-4 sm:p-8 md:p-10 text-white shadow-xl relative overflow-hidden w-full">
-          <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
-          <div className="relative z-10 max-w-2xl min-w-0">
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-indigo-500/30 text-indigo-200 text-[11px] sm:text-xs font-semibold mb-2 sm:mb-3 border border-indigo-400/20 max-w-full">
-              <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
-              <span className="truncate">ยืม-คืนอุปกรณ์ออนไลน์</span>
+        <div className="mb-6 sm:mb-8 bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-10 border border-slate-200/80 shadow-sm relative overflow-hidden w-full">
+          <div className="max-w-3xl min-w-0">
+            <span className="inline-block bg-indigo-50 text-indigo-700 border border-indigo-200/80 font-extrabold text-[10px] sm:text-[11px] tracking-wider px-2.5 py-1 rounded-md mb-3 sm:mb-4">
+              CATERING & EVENT EQUIPMENT SERVICE
             </span>
-            <h2 className="text-xl sm:text-3xl md:text-4xl font-extrabold tracking-tight mb-1.5 sm:mb-2 leading-tight sm:leading-snug break-words">
-              ยืม-คืนอุปกรณ์สำหรับจัดเลี้ยง <br className="hidden sm:inline" />
-              <span className="text-indigo-200">งานบริการกลาง</span>
-            </h2>
-            <p className="text-xs sm:text-base text-indigo-100/80 leading-relaxed max-w-xl break-words">
-              สำหรับอาจารย์ นักศึกษา และบุคลากร ยืมอุปกรณ์ล่วงหน้าสะดวก พร้อมติดตามสถานะได้ทันที
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight mb-2.5 sm:mb-3 leading-tight sm:leading-snug">
+              ระบบยืม-คืนอุปกรณ์สำหรับจัดเลี้ยง งานบริการกลาง
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-3xl">
+              บริการยืมอุปกรณ์สำหรับงานจัดเลี้ยงและกิจกรรม คณะวิทยาศาสตร์ มหาวิทยาลัยสงขลานครินทร์ สำหรับอาจารย์ นักศึกษา และบุคลากร เลือกอุปกรณ์ลงตะกร้าเพื่อยื่นคำขอล่วงหน้า
             </p>
           </div>
         </div>
@@ -145,7 +142,7 @@ export default function HomePage() {
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 sm:w-5 sm:h-5 pointer-events-none" />
             <input
               type="text"
-              placeholder="ค้นหาชื่ออุปกรณ์ เช่น ผ้า, กล้อง, ไมโครโฟน..."
+              placeholder="ค้นหาชื่ออุปกรณ์ เช่น โต๊ะ, เก้าอี้, จาน..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-9 sm:pl-10 pr-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500 bg-white shadow-xs text-xs sm:text-sm transition"
@@ -231,9 +228,9 @@ export default function HomePage() {
       ) : null}
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 bg-white py-6 mt-16">
-        <div className="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
-          © {new Date().getFullYear()} ระบบยืม-คืนอุปกรณ์ คณะวิทยาศาสตร์ • พัฒนาด้วย Next.js, Tailwind CSS
+      <footer className="border-t border-slate-200 bg-white py-8 mt-16">
+        <div className="max-w-7xl mx-auto px-4 text-center text-xs text-slate-400">
+          ระบบยืม-คืนอุปกรณ์จัดเลี้ยง งานบริการกลาง คณะวิทยาศาสตร์ มหาวิทยาลัยสงขลานครินทร์
         </div>
       </footer>
     </div>

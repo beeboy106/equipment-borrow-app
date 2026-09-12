@@ -60,10 +60,10 @@ export default function Navbar() {
           </div>
           <div className="min-w-0">
             <div className="font-extrabold text-slate-900 text-xs sm:text-lg leading-tight group-hover:text-indigo-600 transition-colors truncate">
-              ยืม-คืนอุปกรณ์
+              ยืม-คืนอุปกรณ์จัดเลี้ยง
             </div>
             <div className="text-[10px] sm:text-xs text-slate-400 font-medium truncate">
-              คณะวิทยาศาสตร์
+              งานบริการกลาง คณะวิทยาศาสตร์
             </div>
           </div>
         </Link>
