@@ -104,15 +104,15 @@ export default function HomePage() {
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-2.5 sm:px-6 lg:px-8 py-4 sm:py-10 min-w-0">
         {/* Banner Title Area */}
-        <div className="mb-6 sm:mb-8 bg-gradient-to-r from-indigo-900 via-indigo-800 to-indigo-950 rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-10 text-white shadow-xl relative overflow-hidden w-full">
+        <div className="mb-6 sm:mb-8 bg-gradient-to-r from-indigo-900 via-indigo-800 to-indigo-950 rounded-2xl sm:rounded-3xl p-5 sm:p-8 md:p-10 text-white shadow-xl relative overflow-hidden w-full">
           <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
           <div className="relative z-10 max-w-3xl min-w-0">
             <span className="inline-block bg-indigo-500/30 text-indigo-200 border border-indigo-400/20 font-extrabold text-[10px] sm:text-[11px] tracking-wider px-2.5 py-1 rounded-md mb-3 sm:mb-4">
               CATERING & EVENT EQUIPMENT SERVICE
             </span>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight mb-2.5 sm:mb-3 leading-tight sm:leading-snug break-words">
-              ยืม-คืนอุปกรณ์สำหรับจัดเลี้ยง <br />
-              <span className="text-indigo-200">งานบริการกลาง</span>
+            <h1 className="text-xl sm:text-3xl md:text-4xl font-extrabold tracking-tight mb-2.5 sm:mb-3 leading-tight sm:leading-snug">
+              <span className="inline-block">ยืม-คืนอุปกรณ์</span><br className="sm:hidden" /><span className="inline-block">สำหรับจัดเลี้ยง</span> <br />
+              <span className="text-indigo-200 inline-block">งานบริการกลาง</span>
             </h1>
             <p className="text-xs sm:text-base text-indigo-100/80 leading-relaxed max-w-2xl break-words">
               บริการยืมอุปกรณ์สำหรับงานจัดเลี้ยงและกิจกรรม คณะวิทยาศาสตร์ มหาวิทยาลัยสงขลานครินทร์ สำหรับอาจารย์ นักศึกษา และบุคลากร เลือกอุปกรณ์ลงตะกร้าเพื่อยื่นคำขอล่วงหน้า
