@@ -50,34 +50,34 @@ export default function UserLoginPage() {
 
   if (checkingAuth) {
     return (
-      <div className="min-h-screen bg-[#f8f9fa] flex items-center justify-center p-4">
-        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-gradient-to-b from-slate-100 to-slate-200 flex items-center justify-center p-4">
+        <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa] flex items-center justify-center p-4 sm:p-6 font-sans">
-      <div className="max-w-[460px] w-full bg-white rounded-2xl shadow-sm border border-gray-200/80 p-7 sm:p-9 animate-in zoom-in-95 duration-200">
+    <div className="min-h-screen bg-gradient-to-b from-slate-100 to-slate-200 flex items-center justify-center p-4 sm:p-6 font-sans">
+      <div className="max-w-[460px] w-full bg-white rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl border border-slate-200 p-7 sm:p-9 animate-in zoom-in-95 duration-200">
         {/* Badge */}
         <div className="mb-3">
-          <span className="inline-block bg-[#c2f33c] text-black font-extrabold text-[10px] sm:text-[11px] tracking-wider px-2.5 py-1 rounded">
+          <span className="inline-block bg-indigo-50 text-indigo-700 border border-indigo-200/80 font-extrabold text-[10px] sm:text-[11px] tracking-wider px-2.5 py-1 rounded-lg">
             PSU SCIENCE CENTRAL SERVICES
           </span>
         </div>
 
         {/* Title & Subtitle */}
         <div className="mb-5 sm:mb-6">
-          <h1 className="text-2xl sm:text-[26px] font-black text-gray-900 tracking-tight">
+          <h1 className="text-2xl sm:text-[26px] font-black text-slate-900 tracking-tight">
             ระบบยืม-คืนอุปกรณ์จัดเลี้ยง
           </h1>
-          <p className="text-xs sm:text-[13px] text-gray-500 mt-1">
+          <p className="text-xs sm:text-[13px] text-slate-500 mt-1">
             งานบริการกลาง คณะวิทยาศาสตร์ มหาวิทยาลัยสงขลานครินทร์
           </p>
         </div>
 
         {/* Divider */}
-        <div className="border-t border-gray-100 my-5 sm:my-6" />
+        <div className="border-t border-slate-100 my-5 sm:my-6" />
 
         {/* Error Alert */}
         {errorMsg ? (
@@ -89,8 +89,8 @@ export default function UserLoginPage() {
 
         {/* Notice & Login Button */}
         <div className="space-y-4">
-          <div className="p-4 bg-[#f8f9fa] rounded-xl border border-gray-100/80 text-center">
-            <p className="text-xs sm:text-[13px] text-gray-600 leading-relaxed font-normal">
+          <div className="p-4 bg-slate-50 rounded-xl sm:rounded-2xl border border-slate-100 text-center">
+            <p className="text-xs sm:text-[13px] text-slate-600 leading-relaxed font-normal">
               สำหรับอาจารย์ นักศึกษา และบุคลากรภายในคณะวิทยาศาสตร์ กรุณาเข้าสู่ระบบด้วยบัญชี Google เพื่อยื่นคำขอยืมอุปกรณ์
             </p>
           </div>
@@ -98,7 +98,7 @@ export default function UserLoginPage() {
           <button
             onClick={handleGoogleLogin}
             disabled={loading}
-            className="w-full py-3 bg-[#3b82f6] hover:bg-blue-600 active:bg-blue-700 text-white font-semibold rounded-xl text-sm flex items-center justify-center gap-2.5 shadow-sm transition disabled:opacity-50"
+            className="w-full py-3 sm:py-3.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold rounded-xl shadow-md shadow-indigo-200 transition duration-150 disabled:opacity-50 text-sm flex items-center justify-center gap-2.5 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
           >
             {loading ? (
               <span>กำลังนำทางสู่ Google...</span>
@@ -114,18 +114,18 @@ export default function UserLoginPage() {
         </div>
 
         {/* Divider */}
-        <div className="border-t border-gray-100 my-5 sm:my-6" />
+        <div className="border-t border-slate-100 my-5 sm:my-6" />
 
         {/* Footer */}
         <div className="flex items-center justify-between text-[11px] sm:text-xs pt-1">
-          <span className="text-gray-400">Google OAuth ผ่าน Firebase</span>
+          <span className="text-slate-400">Google OAuth ผ่าน Firebase</span>
           <Link
             href="/admin/login"
-            className="inline-flex items-center gap-1.5 text-gray-800 hover:text-black font-semibold transition hover:underline"
+            className="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 font-semibold transition hover:underline"
           >
-            <Shield className="w-3.5 h-3.5 text-gray-700" />
+            <Shield className="w-3.5 h-3.5 text-indigo-600" />
             <span>เข้าสู่ระบบผู้ดูแลระบบ (Admin)</span>
-            <span className="text-gray-400">→</span>
+            <span className="text-slate-400">→</span>
           </Link>
         </div>
       </div>
