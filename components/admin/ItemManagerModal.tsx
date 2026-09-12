@@ -223,7 +223,7 @@ export default function ItemManagerModal({
           {/* Image Upload Area */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              รูปภาพอุปกรณ์ (Supabase Storage)
+              รูปภาพอุปกรณ์ (Firebase Storage)
             </label>
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-2xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center flex-shrink-0">

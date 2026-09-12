@@ -4,8 +4,8 @@ import { CartProvider } from '@/context/CartContext';
 import ChunkErrorHandler from '@/components/ChunkErrorHandler';
 
 export const metadata: Metadata = {
-  title: 'ระบบยืม-คืนอุปกรณ์สำหรับอาจารย์ในสาขาวิชา',
-  description: 'ระบบยืม-คืนอุปกรณ์ไอทีและสื่อการสอนสำหรับคณาจารย์และบุคลากร',
+  title: 'ระบบยืม-คืนอุปกรณ์สำหรับจัดเลี้ยง งานบริการกลาง คณะวิทยาศาสตร์',
+  description: 'ระบบยืม-คืนอุปกรณ์สำหรับจัดเลี้ยง งานบริการกลาง คณะวิทยาศาสตร์ มหาวิทยาลัยสงขลานครินทร์',
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },

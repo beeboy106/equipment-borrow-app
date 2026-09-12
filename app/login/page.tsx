@@ -64,9 +64,9 @@ export default function UserLoginPage() {
           <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-tr from-indigo-600 to-violet-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-3.5 shadow-lg shadow-indigo-200">
             <PackageCheck className="w-7 h-7 sm:w-8 sm:h-8" />
           </div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900">ระบบยืม-คืนอุปกรณ์</h1>
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900">ระบบยืม-คืนอุปกรณ์จัดเลี้ยง</h1>
           <p className="text-[11px] sm:text-xs text-slate-500 mt-1">
-            สาขาวิชาเทคโนโลยีสารสนเทศและคอมพิวเตอร์
+            งานบริการกลาง คณะวิทยาศาสตร์ มหาวิทยาลัยสงขลานครินทร์
           </p>
         </div>
 

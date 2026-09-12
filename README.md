@@ -1,107 +1,135 @@
-# ระบบยืม-คืนอุปกรณ์สำหรับอาจารย์และบุคลากรในสาขาวิชา (Equipment Borrowing System)
+# ระบบยืม-คืนอุปกรณ์สำหรับจัดเลี้ยง งานบริการกลาง คณะวิทยาศาสตร์
+### Faculty of Science, Prince of Songkla University (PSU)
 
-เว็บแอปพลิเคชันจัดการการยืม-คืนอุปกรณ์การเรียนการสอนและอุปกรณ์ไอที พัฒนาด้วย **Next.js (App Router)**, **Tailwind CSS**, **Lucide React Icons** และ **Supabase (PostgreSQL + Real-time + Storage + RLS)**
-
----
-
-## 🌟 ฟีเจอร์หลักของระบบ
-
-### 1. ส่วนผู้ใช้งานทั่วไป (อาจารย์ / เจ้าหน้าที่)
-- 📦 **หน้าแสดงรายการอุปกรณ์ Real-time**: แสดงรายการอุปกรณ์ทั้งหมด พร้อมรูปภาพ หมวดหมู่ คำอธิบาย และจำนวนคงเหลือที่อัปเดตแบบสดๆ (Real-time) ทันทีที่มีการยืมหรือคืน
-- 🛒 **ระบบตะกร้าเลือกยืม (Cart Drawer)**: เลือกอุปกรณ์ลงตะกร้าได้หลายชิ้น ปรับเพิ่ม-ลดจำนวนตามสต็อกที่มีอยู่จริง
-- 📝 **ฟอร์มยืนยันการยืม**: กรอกชื่อผู้ยืม, อีเมล, เบอร์โทรศัพท์, วัตถุประสงค์ในการยืม และกำหนดวันส่งคืน
-- ⚡ **Atomic Stock Deduction**: ตัดสต็อกทันทีด้วย PostgreSQL Stored Procedure (`borrow_equipment`) ป้องกันปัญหาแย่งกันยืม (Race Condition) หรือของติดลบ
-
-### 2. ส่วนผู้ดูแลระบบ (Admin Dashboard)
-- 🔐 **ระบบเข้าสู่ระบบ Admin**: ล็อกอินผ่าน Supabase Authentication ปลอดภัยตามมาตรฐาน
-- 📊 **สถิติภาพรวม (Analytics Cards)**: สรุปจำนวนอุปกรณ์ที่กำลังถูกยืมอยู่, จำนวนที่คืนแล้ว, จำนวนอุปกรณ์คงเหลือ และชนิดของอุปกรณ์
-- 🛠️ **จัดการอุปกรณ์ (CRUD)**: เพิ่ม แก้ไข ลบ อุปกรณ์ พร้อมระบบอัปโหลดรูปภาพเข้าสู่ **Supabase Storage Bucket (`equipment-images`)**
-- 📋 **ตารางประวัติการยืม-คืน**: ตรวจสอบข้อมูลผู้ยืม รายการอุปกรณ์ และวันเวลาที่ยืม/กำหนดคืน
-- 🔄 **ปุ่มกดรับคืนอุปกรณ์**: กดปุ่มเพื่อเปลี่ยนสถานะเป็น "คืนแล้ว" พร้อม**เพิ่มสต็อกอุปกรณ์กลับคืนอัตโนมัติ**ผ่าน Stored Procedure (`return_equipment`)
-- 📥 **Export Data**: ปุ่มส่งออกประวัติการยืมทั้งหมดเป็นไฟล์ **CSV (Excel)** รองรับภาษาไทย (UTF-8 with BOM)
+เว็บแอปพลิเคชันจัดการการยืม-คืนอุปกรณ์สำหรับงานจัดเลี้ยงและกิจกรรม ของ**งานบริการกลาง คณะวิทยาศาสตร์ มหาวิทยาลัยสงขลานครินทร์** พัฒนาด้วยเทคโนโลยีสมัยใหม่ **Next.js 15 (App Router)**, **React 19**, **Tailwind CSS**, และ **Google Firebase (Authentication + Cloud Firestore Real-time + Cloud Storage)** พร้อมระบบแจ้งเตือนทางอีเมลผ่าน **Resend API**
 
 ---
 
-## 🚀 ขั้นตอนการติดตั้งและเริ่มต้นใช้งาน (Quick Setup)
+## 🌟 ฟีเจอร์หลักของระบบ (Key Features)
 
-### 1. ตั้งค่าฐานข้อมูลบน Supabase
-1. สมัครหรือเข้าสู่ระบบที่ [Supabase.com](https://supabase.com) แล้วสร้างโปรเจกต์ใหม่
-2. ไปที่เมนู **SQL Editor** ใน Supabase Dashboard
-3. คัดลอกโค้ดจากไฟล์ `supabase/schema.sql` ไปวางแล้วกด **Run** เพื่อสร้างตาราง, Stored Procedures, Storage Bucket และ RLS Policies
-4. *(แนะนำ)* คัดลอกโค้ดจากไฟล์ `supabase/seed.sql` ไปวางแล้วกด **Run** เพื่อเพิ่มข้อมูลตัวอย่างอุปกรณ์เริ่มต้น 8 รายการสำหรับการทดสอบ
-5. ไปที่เมนู **Authentication > Users** กด **Add User** เพื่อสร้างบัญชี Admin สำหรับเข้าใช้งาน Dashboard (เช่น `admin@univ.ac.th` และกำหนดรหัสผ่าน)
+### 1. ฝั่งผู้ใช้งานทั่วไป (อาจารย์, นักศึกษา, บุคลากร)
+- 🔐 **เข้าสู่ระบบด้วย Google Account (SSO)**: ปลอดภัย รวดเร็ว รองรับอีเมลมหาวิทยาลัย (`@psu.ac.th`) และบัญชี Google
+- 🍽️ **แคตตาล็อกอุปกรณ์จัดเลี้ยง Real-time**: แสดงรายการอุปกรณ์จัดเลี้ยง (โต๊ะ, เก้าอี้, ภาชนะ, ผ้าปูโต๊ะ ฯลฯ) พร้อมรูปภาพ คำอธิบาย และสต็อกคงเหลือที่อัปเดตแบบสดๆ
+- 🔍 **ระบบค้นหาและตัวกรองหมวดหมู่**: ค้นหาตามชื่ออุปกรณ์ หรือเลือกดูตามหมวดหมู่ได้อย่างรวดเร็ว
+- 🛒 **ระบบตะกร้าเลือกยืม (Cart Drawer)**: เลือกอุปกรณ์ได้หลายรายการพร้อมกัน ปรับเพิ่ม-ลดจำนวนได้ตามสต็อกที่มีอยู่จริง พร้อมแถบลอยสรุปตะกร้า (Floating Cart Bar)
+- 📝 **ฟอร์มยืนยันการยืมล่วงหน้า (Borrow Modal)**:
+  - บังคับกรอกเบอร์โทรศัพท์ที่ถูกต้อง (ระบบตรวจเช็คเบอร์ไทย 9–10 หลัก)
+  - บังคับเลือกสังกัด (4 สาขาวิชา หรือ 12 หน่วยงานสนับสนุน คณะวิทยาศาสตร์)
+  - บังคับระบุวัตถุประสงค์การใช้งาน (รองรับการพิมพ์เครื่องหมาย `-` แทนการเขียนได้)
+  - กำหนดวันใช้งานและวันส่งคืน
+- 📋 **ติดตามสถานะคำขอของฉัน (`/my-requests`)**: ตรวจสอบสถานะคำขอของตนเองได้แบบสดๆ (รอพิจารณา, อนุมัติแล้ว, ปฏิเสธ, คืนแล้ว, ยกเลิกแล้ว) พร้อมปุ่มกดยกเลิกคำขอที่ยังไม่ได้พิจารณา
+- 📱 **รองรับการใช้งานบนมือถือ 100%**: จัดวางสัดส่วนหน้าจออย่างสวยงาม ใช้งานสะดวกทั้งบนมือถือและคอมพิวเตอร์
+
+### 2. ฝั่งผู้ดูแลระบบ (Admin Dashboard)
+- 🛡️ **เข้าสู่ระบบ Admin ด้วย Google SSO**: เข้าใช้งานแอดมินได้ทันทีในคลิกเดียวผ่านบัญชี Google ที่ได้รับสิทธิ์ ปราศจากปัญหารหัสผ่านหายหรือถูกลบทับ
+- 🔑 **ระบบลงทะเบียนสิทธิ์แอดมินด้วย Security Key**: เพิ่มสิทธิ์ผู้ดูแลระบบให้กับบัญชี Google ใหม่ได้ง่ายๆ ผ่านรหัสความปลอดภัย (`psu-admin-2026`)
+- 📊 **แดชบอร์ดสถิติภาพรวม (Analytics Cards)**: สรุปจำนวนคำขอทั้งหมด, รอพิจารณา, อนุมัติแล้ว, และตรวจจับรายการที่**เกินกำหนดคืน (Overdue)**
+- ⚡ **พิจารณาอนุมัติคำขอ (Approval Modal)**:
+  - กำหนดจำนวนที่อนุมัติจริงให้เหมาะสมกับกิจกรรม
+  - นัดหมายวันและเวลารับของ เพื่อให้ผู้ยืมมารับอุปกรณ์ที่งานบริการกลาง
+  - ปฏิเสธคำขอพร้อมระบุเหตุผลให้ผู้ยืมทราบ
+- 🔄 **ระบบรับคืนอุปกรณ์ (Return Equipment)**: บันทึกรับคืนอุปกรณ์พร้อม**คืนสต็อกกลับเข้าคลังอัตโนมัติ**ด้วย Cloud Firestore Atomic Transaction
+- 🔍 **ระบบคัดกรองคำขอขั้นสูง**: คัดกรองตามสถานะ, กลุ่มผู้ใช้งาน, ระบุเดือน, ระบุวันที่, หรือเลือกช่วงวันที่ (Date Range)
+- 📥 **ส่งออกข้อมูล CSV (Excel ภาษาไทย)**: ดาวน์โหลดประวัติการยืม-คืนเป็นไฟล์ Excel พร้อมแนบ UTF-8 BOM แสดงภาษาไทยถูกต้อง 100%
+- 🛠️ **จัดการคลังอุปกรณ์ (CRUD)**: เพิ่ม แก้ไข ลบ อุปกรณ์ พร้อมระบบอัปโหลดรูปภาพเข้า **Firebase Storage**
+- 📱 **Mobile Floating Cards View**: บนหน้าจอมือถือ ตารางคำขอจะปรับเปลี่ยนเป็นการ์ดข้อมูลอิสระ พร้อมระบบคลี่ดูรายละเอียด (Accordion) และปุ่ม Action ชัดเจน
+
+### 3. ระบบแจ้งเตือนทางอีเมล (Email Notifications)
+- ✉️ ส่งอีเมลแจ้งเตือนเจ้าหน้าที่งานบริการกลางอัตโนมัติผ่าน **Resend API** ทันทีที่มีคำขอยืมใหม่
+- ดีไซน์เทมเพลตอีเมล HTML คมชัด พร้อมรายละเอียดผู้ยืม, รายการอุปกรณ์, สังกัด, วัตถุประสงค์ และปุ่มลิงก์ตรงเข้าสู่หน้า Admin
 
 ---
 
-### 2. ตั้งค่าโปรเจกต์ Next.js
-เปิด Terminal ในโฟลเดอร์โปรเจกต์ `equipment-borrow-app` แล้วดำเนินการดังนี้:
+## 🛠️ เทคโนโลยีที่ใช้ (Tech Stack)
 
+- **Frontend**: Next.js 15 (App Router), React 19, TypeScript
+- **Styling**: Tailwind CSS 3.4, Lucide React Icons
+- **Backend & Database**: Google Firebase
+  - **Firebase Authentication**: Google OAuth
+  - **Cloud Firestore**: Real-time Database with Security Rules & Transactions
+  - **Firebase Storage**: Image Upload Bucket
+- **Email Service**: Resend API
+- **State Management**: Zustand, React Context, LocalStorage
+- **Testing**: Vitest
+
+---
+
+## 🚀 ขั้นตอนการติดตั้งและเริ่มต้นใช้งาน (Installation & Setup)
+
+### 1. Clone โปรเจกต์ และติดตั้ง Dependencies
 ```bash
-# 1. ติดตั้ง Dependencies
+git clone https://github.com/beeboy106/equipment-borrow-app.git
+cd equipment-borrow-app
 npm install
+```
 
-# 2. ตั้งค่าไฟล์ Environment Variables
-# คัดลอก .env.local.example เป็น .env.local
+### 2. ตั้งค่าไฟล์ Environment Variables
+คัดลอกไฟล์ตัวอย่าง `.env.local.example` ไปเป็น `.env.local`:
+```bash
 cp .env.local.example .env.local
 ```
 
-เปิดไฟล์ `.env.local` แล้วใส่ค่า URL และ Anon Key ที่ได้จาก Supabase Dashboard (**Project Settings > API**):
-
+กำหนดค่าในไฟล์ `.env.local`:
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+# Firebase Credentials (จาก Firebase Console -> Project Settings -> General)
+NEXT_PUBLIC_FIREBASE_API_KEY=your-api-key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=equipment-borrow-4942d.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=equipment-borrow-4942d
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=equipment-borrow-4942d.firebasestorage.app
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your-measurement-id
+
+# Resend API Key สำหรับระบบส่งอีเมลแจ้งเตือน
+RESEND_API_KEY=your-resend-api-key
+RESEND_FROM_EMAIL=onboarding@resend.dev
+ADMIN_NOTIFICATION_EMAIL=your-admin-email@gmail.com
+
+# รหัสยืนยันสิทธิ์สร้างบัญชี Admin
+NEXT_PUBLIC_ADMIN_REGISTRATION_KEY=psu-admin-2026
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
----
-
-### 3. รันโปรเจกต์
-
+### 3. รันโปรเจกต์สำหรับ Development
 ```bash
 npm run dev
 ```
 
-เปิดเว็บเบราว์เซอร์:
+เปิดเว็บเบราว์เซอร์ที่:
 - 🌐 **หน้าผู้ใช้งานทั่วไป**: [http://localhost:3000](http://localhost:3000)
 - 🔐 **หน้าเข้าสู่ระบบ Admin**: [http://localhost:3000/admin/login](http://localhost:3000/admin/login)
 - 📊 **หน้า Admin Dashboard**: [http://localhost:3000/admin/dashboard](http://localhost:3000/admin/dashboard)
 
+### 4. ทดสอบ Build โปรเจกต์
+```bash
+npm run build
+```
+
 ---
 
-## 📁 โครงสร้างโฟลเดอร์ (Folder Structure)
+## 🏛️ สังกัดหน่วยงานภายในคณะวิทยาศาสตร์ที่รองรับ
 
-```text
-equipment-borrow-app/
-├── app/
-│   ├── globals.css                    # Tailwind Global Styles & Custom Scrollbar
-│   ├── layout.tsx                     # Root Layout ครอบ CartProvider
-│   ├── page.tsx                       # หน้าหลักผู้ใช้: รายการอุปกรณ์ Real-time + ตะกร้า
-│   ├── admin/
-│   │   ├── login/
-│   │   │   └── page.tsx               # หน้าล็อกอิน Admin (Supabase Auth)
-│   │   └── dashboard/
-│   │       └── page.tsx               # Admin Dashboard จัดการครบวงจร
-├── components/
-│   ├── Navbar.tsx                     # Header เมนูด้านบน
-│   ├── EquipmentCard.tsx              # การ์ดแสดงอุปกรณ์ พร้อมปุ่มยืม
-│   ├── CartDrawer.tsx                 # แถบตะกร้าสินค้าสไลด์ออกด้านข้าง
-│   ├── BorrowModal.tsx                # ฟอร์มยืนยันการยืมอุปกรณ์
-│   └── admin/
-│       ├── StatsCards.tsx             # การ์ดแสดงสถิติ Analytics
-│       ├── ItemManagerModal.tsx       # Modal เพิ่ม/แก้ไขอุปกรณ์ + อัปโหลดรูปภาพ
-│       └── BorrowHistoryTable.tsx     # ตารางประวัติการยืม + ปุ่มรับคืน
-├── context/
-│   └── CartContext.tsx                # State ตะกร้าสินค้า (Persistent with LocalStorage)
-├── lib/
-│   ├── supabase/
-│   │   └── client.ts                  # Supabase Client setup
-│   ├── types.ts                       # TypeScript Data Types
-│   └── utils.ts                       # Helper functions (Date formatting, Export CSV)
-├── supabase/
-│   ├── schema.sql                     # SQL Schema, Stored Procedures, RLS, Storage Bucket
-│   └── seed.sql                       # Mock Data สำหรับทดสอบ
-├── package.json
-├── tailwind.config.ts
-├── tsconfig.json
-├── next.config.mjs
-└── .env.local
-```
+### สาขาวิชา (Departments):
+1. วิทยาศาสตร์กายภาพ
+2. วิทยาศาสตร์ชีวภาพ
+3. วิทยาศาสตร์การคำนวณ
+4. วิทยาศาสตร์สุขภาพและวิทยาศาสตร์ประยุกต์
+
+### หน่วยงานสนับสนุน (Support Units):
+1. งานสนับสนุนการจัดการศึกษา
+2. งานสนับสนุนการวิจัย
+3. งานสนับสนุนการบริการวิชาการ
+4. งานพัฒนานักศึกษาและศิษย์เก่าสัมพันธ์
+5. งานสนับสนุนข้อมูลสารสนเทศและเทคโนโลยี
+6. งานเครือข่ายและประชาสัมพันธ์ (หน่วยวิเทศสัมพันธ์)
+7. งานเครือข่ายและประชาสัมพันธ์ (หน่วยประชาสัมพันธ์)
+8. งานบริหารทรัพยากรมนุษย์
+9. **งานบริการกลาง** (เจ้าของระบบคลังจัดเลี้ยง)
+10. งานสนับสนุนด้านกายภาพและสิ่งแวดล้อม
+11. งานพัสดุ
+12. งานการเงินและบัญชี
+
+---
+
+## 📄 ใบอนุญาต (License)
+โปรเจกต์นี้พัฒนาขึ้นเพื่อใช้งานภายในงานบริการกลาง คณะวิทยาศาสตร์ มหาวิทยาลัยสงขลานครินทร์
