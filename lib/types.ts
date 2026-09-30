@@ -34,6 +34,12 @@ export interface BorrowRequestItem {
   } | null;
 }
 
+export interface ReturnIssue {
+  item_id: string;
+  type: 'lost' | 'damaged';
+  quantity: number;
+}
+
 export interface BorrowRequest {
   id: string;
   user_id?: string | null;
@@ -47,6 +53,8 @@ export interface BorrowRequest {
   return_date: string;
   pickup_time?: string | null;
   admin_note?: string | null;
+  return_condition?: 'complete' | 'incomplete' | null;
+  return_issues?: ReturnIssue[];
   status: BorrowStatus;
   created_at?: string;
   updated_at?: string;

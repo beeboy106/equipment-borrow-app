@@ -125,14 +125,14 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
       return;
     }
 
-    // Validate เบอร์โทรศัพท์ (Required & 9-10 หลัก)
-    const cleanPhone = formData.phone.trim().replace(/[\s-]/g, '');
+    // Validate เบอร์โทรศัพท์ (Required, digits only)
+    const cleanPhone = formData.phone.trim();
     if (!cleanPhone) {
       setErrorMessage('กรุณาระบุเบอร์โทรศัพท์สำหรับติดต่อ (บังคับ)');
       return;
     }
-    if (!/^(0\d{8,9}|\+66\d{8,9})$/.test(cleanPhone)) {
-      setErrorMessage('รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง (กรุณากรอกเบอร์ 9-10 หลัก เช่น 081-234-5678)');
+    if (!/^\d+$/.test(cleanPhone)) {
+      setErrorMessage('กรุณากรอกเบอร์โทรศัพท์เป็นตัวเลขเท่านั้น');
       return;
     }
 
@@ -141,7 +141,7 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
       setErrorMessage(
         formData.user_group === 'บุคลากรภายใน'
           ? 'กรุณาระบุหรือเลือกหน่วยงานของคุณ'
-          : 'กรุณาระบุหรือเลือกภาควิชาของคุณ'
+          : 'กรุณาระบุหรือเลือกสาขาวิชาของคุณ'
       );
       return;
     }
@@ -328,9 +328,10 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
                   <input
                     type="tel"
                     required
-                    placeholder="081-234-5678"
+                    inputMode="numeric"
+                    placeholder="กรอกตัวเลขเท่านั้น"
                     value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '') })}
                     className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
@@ -378,7 +379,7 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
               </div>
             </div>
 
-            {/* 4. Conditional Sub-options: ภาควิชา หรือ หน่วยงาน */}
+            {/* 4. Conditional Sub-options: สาขาวิชา หรือ หน่วยงาน */}
             <div className="p-3.5 bg-indigo-50/40 rounded-2xl border border-indigo-100 animate-in fade-in-50 slide-in-from-top-1 duration-200">
               {formData.user_group === 'บุคลากรภายใน' ? (
                 // กรณีเลือก "บุคลากรภายใน" -> หน่วยงาน (Select Dropdown)
@@ -409,11 +410,11 @@ export default function BorrowModal({ isOpen, onClose, onSuccess }: BorrowModalP
                   </div>
                 </div>
               ) : (
-                // กรณีเลือก "อาจารย์" หรือ "นักศึกษา" -> ภาควิชา (Radio Buttons Grid)
+                // กรณีเลือก "อาจารย์" หรือ "นักศึกษา" -> สาขาวิชา (Radio Buttons Grid)
                 <div>
                   <label className="block text-xs font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
                     <School className="w-3.5 h-3.5 text-indigo-600" />
-                    ภาควิชา <span className="text-rose-500">*</span>
+                    สาขาวิชา <span className="text-rose-500">*</span>
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {DEPARTMENT_OPTIONS.map((dept) => (

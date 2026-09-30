@@ -79,9 +79,9 @@ function BorrowHistoryTableComponent({
         );
       case 'returned':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-100 border border-zinc-200 text-zinc-600 text-xs font-bold whitespace-nowrap">
+          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-bold whitespace-nowrap ${rec.return_condition === 'incomplete' ? 'bg-orange-50 border-orange-200 text-orange-700' : 'bg-zinc-100 border-zinc-200 text-zinc-600'}`}>
             <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 shrink-0" />
-            <span>คืนแล้ว</span>
+            <span>{rec.return_condition === 'incomplete' ? 'คืนไม่ครบ' : 'คืนครบแล้ว'}</span>
           </span>
         );
       case 'cancelled':

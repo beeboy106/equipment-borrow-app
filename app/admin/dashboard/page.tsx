@@ -6,14 +6,16 @@ import {
   fetchItems as getItemsFromFirestore,
   fetchBorrowRequests as getRequestsFromFirestore,
   returnBorrowRequestTransaction,
+  deleteAllBorrowRequests,
   deleteItem as deleteItemFromFirestore,
   checkIsAdmin,
 } from '@/lib/firebase/firestoreService';
 import { useRouter } from 'next/navigation';
-import { Item, BorrowRequest, StatsSummary } from '@/lib/types';
+import { Item, BorrowRequest, ReturnIssue, StatsSummary } from '@/lib/types';
 import { formatDate, formatDateTime, exportToCSV } from '@/lib/utils';
 import StatsCards from '@/components/admin/StatsCards';
 import BorrowHistoryTable from '@/components/admin/BorrowHistoryTable';
+import ReturnEquipmentModal from '@/components/admin/ReturnEquipmentModal';
 import ToastContainer, { ToastMessage, ToastType } from '@/components/ui/Toast';
 import dynamic from 'next/dynamic';
 
@@ -111,6 +113,7 @@ export default function AdminDashboardPage() {
     item: null,
     loading: false,
   });
+  const [clearHistoryState, setClearHistoryState] = useState({ isOpen: false, loading: false });
 
   const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
 
@@ -175,16 +178,18 @@ export default function AdminDashboardPage() {
     });
   };
 
-  const handleConfirmReturn = async () => {
+  const handleConfirmReturn = async (returnIssues: ReturnIssue[]) => {
     if (!returnConfirmState.request) return;
 
     try {
       setReturnConfirmState((prev) => ({ ...prev, loading: true }));
-      await returnBorrowRequestTransaction(returnConfirmState.request.id);
+      await returnBorrowRequestTransaction(returnConfirmState.request.id, returnIssues);
 
       showToast(
         'success',
-        `รับคืนอุปกรณ์จากคุณ ${returnConfirmState.request.borrower_name} และเพิ่มสต็อกกลับคืนเรียบร้อยแล้ว`,
+        returnIssues.length
+          ? `บันทึกรับคืนจากคุณ ${returnConfirmState.request.borrower_name} พร้อมตัดยอดรายการที่ขาดจากคลังแล้ว`
+          : `รับคืนอุปกรณ์จากคุณ ${returnConfirmState.request.borrower_name} และเพิ่มสต็อกกลับคืนเรียบร้อยแล้ว`,
         'บันทึกรับคืนสำเร็จ'
       );
       setReturnConfirmState({ isOpen: false, request: null, loading: false });
@@ -193,6 +198,20 @@ export default function AdminDashboardPage() {
       console.error('Error returning equipment:', err);
       showToast('error', err.message || 'ไม่สามารถบันทึกรับคืนได้', 'เกิดข้อผิดพลาด');
       setReturnConfirmState((prev) => ({ ...prev, loading: false }));
+    }
+  };
+
+  const handleClearHistory = async () => {
+    try {
+      setClearHistoryState({ isOpen: true, loading: true });
+      const deletedCount = await deleteAllBorrowRequests();
+      setClearHistoryState({ isOpen: false, loading: false });
+      showToast('success', `ล้างประวัติคำขอยืม ${deletedCount} รายการจากฐานข้อมูลแล้ว`, 'ล้างประวัติสำเร็จ');
+      await fetchRequests();
+    } catch (err: any) {
+      console.error('Error clearing borrow history:', err);
+      showToast('error', err.message || 'ไม่สามารถล้างประวัติได้', 'เกิดข้อผิดพลาด');
+      setClearHistoryState((prev) => ({ ...prev, loading: false }));
     }
   };
 
@@ -238,6 +257,10 @@ export default function AdminDashboardPage() {
       approved: requests.filter((r) => r.status === 'approved' && r.return_date >= todayStr).length,
       overdue: requests.filter((r) => r.status === 'approved' && r.return_date < todayStr).length,
       returned: requests.filter((r) => r.status === 'returned').length,
+      complete: requests.filter((r) => r.status === 'returned' && r.return_condition !== 'incomplete').length,
+      incomplete: requests.filter((r) => r.status === 'returned' && r.return_condition === 'incomplete').length,
+      lost: requests.filter((r) => r.return_issues?.some((issue) => issue.type === 'lost')).length,
+      damaged: requests.filter((r) => r.return_issues?.some((issue) => issue.type === 'damaged')).length,
       rejected: requests.filter((r) => r.status === 'rejected').length,
     };
   }, [requests, todayStr]);
@@ -285,6 +308,12 @@ export default function AdminDashboardPage() {
         matchStatus = r.status === 'approved' && r.return_date < todayStr;
       } else if (statusFilter === 'approved') {
         matchStatus = r.status === 'approved' && r.return_date >= todayStr;
+      } else if (statusFilter === 'complete') {
+        matchStatus = r.status === 'returned' && r.return_condition !== 'incomplete';
+      } else if (statusFilter === 'incomplete') {
+        matchStatus = r.status === 'returned' && r.return_condition === 'incomplete';
+      } else if (statusFilter === 'lost' || statusFilter === 'damaged') {
+        matchStatus = r.return_issues?.some((issue) => issue.type === statusFilter) || false;
       } else {
         matchStatus = r.status === statusFilter;
       }
@@ -387,7 +416,7 @@ export default function AdminDashboardPage() {
         'รหัสคำขอ': r.id,
         'ชื่อผู้ขอยืม': r.borrower_name,
         'กลุ่มผู้ใช้': r.user_group,
-        'ภาควิชา/หน่วยงาน': r.department_or_unit || '-',
+        'สาขาวิชา/หน่วยงาน': r.department_or_unit || '-',
         'อีเมล': r.borrower_email,
         'เบอร์โทร': r.phone,
         'วัตถุประสงค์': r.purpose,
@@ -397,8 +426,9 @@ export default function AdminDashboardPage() {
         'สถานะ': statusLabel,
         'รายการที่ขอ': requestedItemsStr,
         'รายการที่อนุมัติ': r.status === 'approved' || r.status === 'returned' ? approvedItemsStr : '-',
-        'เวลานัดรับของ': r.pickup_time || '-',
-        'หมายเหตุ/เหตุผล': r.admin_note || '-',
+        'เหตุผลที่ไม่อนุมัติ': r.status === 'rejected' ? r.admin_note || '-' : '-',
+        'สูญหาย': r.return_issues?.filter((issue) => issue.type === 'lost').map((issue) => `${r.borrow_items?.find((item) => item.item_id === issue.item_id)?.item?.name || 'อุปกรณ์'} (${issue.quantity} ชิ้น)`).join('; ') || '-',
+        'เสียหาย': r.return_issues?.filter((issue) => issue.type === 'damaged').map((issue) => `${r.borrow_items?.find((item) => item.item_id === issue.item_id)?.item?.name || 'อุปกรณ์'} (${issue.quantity} ชิ้น)`).join('; ') || '-',
       };
     });
 
@@ -583,15 +613,10 @@ export default function AdminDashboardPage() {
             </button>
 
             {activeTab === 'requests' ? (
-              <button
-                onClick={handleExportCSV}
-                className="px-3 sm:px-4 py-2 sm:py-2.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs whitespace-nowrap shrink-0"
-                title="ส่งออกรายการตามตัวกรองปัจจุบัน"
-              >
-                <Download className="w-4 h-4 text-slate-500 shrink-0" />
-                <span className="hidden sm:inline">Export CSV</span>
-                <span>({filteredRequests.length})</span>
-              </button>
+              <>
+                <button onClick={handleExportCSV} className="px-3 sm:px-4 py-2 sm:py-2.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs whitespace-nowrap shrink-0" title="ส่งออกรายการตามตัวกรองปัจจุบัน"><Download className="w-4 h-4 text-slate-500 shrink-0" /><span className="hidden sm:inline">Export CSV</span><span>({filteredRequests.length})</span></button>
+                <button onClick={() => setClearHistoryState({ isOpen: true, loading: false })} className="p-2 sm:px-3 sm:py-2.5 rounded-xl border border-rose-200 bg-white text-rose-600 hover:bg-rose-50 text-xs font-bold transition shrink-0" title="ล้างประวัติการยืมทั้งหมด"><Trash2 className="w-4 h-4" /><span className="hidden sm:inline ml-1">ล้างประวัติ</span></button>
+              </>
             ) : (
               <button
                 onClick={() => {
@@ -621,6 +646,10 @@ export default function AdminDashboardPage() {
                 { label: 'อนุมัติแล้ว', value: 'approved', count: badgeCounts.approved, color: 'bg-emerald-100 text-emerald-800' },
                 { label: '⚠️ เกินกำหนดคืน', value: 'overdue', count: badgeCounts.overdue, color: 'bg-rose-100 text-rose-800' },
                 { label: 'คืนแล้ว', value: 'returned', count: badgeCounts.returned, color: 'bg-slate-200 text-slate-700' },
+                { label: 'ครบ', value: 'complete', count: badgeCounts.complete, color: 'bg-emerald-50 text-emerald-700' },
+                { label: 'ไม่ครบ', value: 'incomplete', count: badgeCounts.incomplete, color: 'bg-orange-50 text-orange-700' },
+                { label: 'สูญหาย', value: 'lost', count: badgeCounts.lost, color: 'bg-rose-50 text-rose-700' },
+                { label: 'เสียหาย', value: 'damaged', count: badgeCounts.damaged, color: 'bg-amber-50 text-amber-700' },
                 { label: 'ไม่อนุมัติ', value: 'rejected', count: badgeCounts.rejected, color: 'bg-rose-50 text-rose-600' },
               ].map((st) => (
                 <button
@@ -1018,45 +1047,24 @@ export default function AdminDashboardPage() {
         }}
       />
 
-      {/* Return Confirmation Modal */}
-      <ConfirmModal
+      <ReturnEquipmentModal
         isOpen={returnConfirmState.isOpen}
-        title="ยืนยันการรับคืนอุปกรณ์"
-        iconType="info"
-        confirmText="ยืนยันรับคืนอุปกรณ์"
-        cancelText="ยกเลิก"
+        request={returnConfirmState.request}
         isLoading={returnConfirmState.loading}
         onClose={() => setReturnConfirmState({ isOpen: false, request: null, loading: false })}
         onConfirm={handleConfirmReturn}
-        description={
-          returnConfirmState.request ? (
-            <div className="space-y-2 mt-1">
-              <p>
-                ยืนยันว่าได้รับอุปกรณ์คืนครบถ้วนจากคุณ{' '}
-                <strong className="text-slate-900">{returnConfirmState.request.borrower_name}</strong>{' '}
-                เรียบร้อยแล้วหรือไม่?
-              </p>
-              <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-slate-700">
-                <p className="font-bold text-[11px] text-slate-500 mb-1">รายการอุปกรณ์ที่ต้องรับคืน:</p>
-                <ul className="space-y-1">
-                  {returnConfirmState.request.borrow_items?.map((bi) => (
-                    <li key={bi.id} className="text-xs flex justify-between">
-                      <span>• {bi.item?.name || 'อุปกรณ์'}</span>
-                      <strong className="text-indigo-600">
-                        {bi.approved_qty ?? bi.requested_qty} ชิ้น
-                      </strong>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <p className="text-[11px] text-emerald-600 font-semibold">
-                ✓ ระบบจะนำจำนวนอุปกรณ์ดังกล่าวกลับเข้าสู่สต็อกพร้อมใช้อัตโนมัติ
-              </p>
-            </div>
-          ) : (
-            ''
-          )
-        }
+      />
+
+      <ConfirmModal
+        isOpen={clearHistoryState.isOpen}
+        title="ยืนยันการล้างประวัติการยืม"
+        isDanger={true}
+        confirmText="ล้างประวัติทั้งหมด"
+        cancelText="ยกเลิก"
+        isLoading={clearHistoryState.loading}
+        onClose={() => setClearHistoryState({ isOpen: false, loading: false })}
+        onConfirm={handleClearHistory}
+        description={<div><p>คุณต้องการลบประวัติคำขอยืมทั้งหมดจากฐานข้อมูลใช่หรือไม่?</p><p className="mt-2 text-[11px] font-semibold text-rose-600">การดำเนินการนี้ไม่สามารถย้อนกลับได้ และจะไม่กระทบรายการอุปกรณ์ในคลัง</p></div>}
       />
 
       {/* Delete Item Confirmation Modal */}

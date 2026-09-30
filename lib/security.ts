@@ -42,12 +42,11 @@ export function isValidEmail(email: string): boolean {
 }
 
 /**
- * Validates phone numbers (numeric, hyphens, plus, spaces, 8-20 characters)
+ * Validates phone numbers containing digits only, without a length restriction.
  */
 export function isValidPhone(phone: string): boolean {
   if (!phone) return false;
-  const cleaned = phone.trim().replace(/[\s-]/g, '');
-  return /^(0\d{8,9}|\+66\d{8,9}|\d{8,15})$/.test(cleaned);
+  return /^\d+$/.test(phone.trim());
 }
 
 // In-Memory Rate Limiter Map: key -> { count, resetTime }

@@ -11,10 +11,11 @@ import {
   orderBy,
   onSnapshot,
   runTransaction,
+  writeBatch,
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from './client';
-import { Item, BorrowRequest, BorrowRequestItem } from '@/lib/types';
+import { Item, BorrowRequest, BorrowRequestItem, ReturnIssue } from '@/lib/types';
 
 // ==========================================
 // 1. ITEMS MANAGEMENT
@@ -280,6 +281,7 @@ export async function rejectBorrowRequest(requestId: string, adminNote?: string)
 // Atomic Transaction: Return Borrow Request (Restore inventory)
 export async function returnBorrowRequestTransaction(
   requestId: string,
+  returnIssues: ReturnIssue[] = [],
   adminNote?: string
 ): Promise<void> {
   await runTransaction(db, async (transaction) => {
@@ -293,14 +295,28 @@ export async function returnBorrowRequestTransaction(
     }
 
     // Read all item docs first
+    const issueByItem = new Map<string, ReturnIssue>();
+    for (const issue of returnIssues) {
+      if (!issue.item_id || !['lost', 'damaged'].includes(issue.type) || !Number.isInteger(issue.quantity) || issue.quantity <= 0) {
+        throw new Error('ข้อมูลอุปกรณ์ที่สูญหายหรือเสียหายไม่ถูกต้อง');
+      }
+      if (issueByItem.has(issue.item_id)) throw new Error('ระบุความเสียหายของอุปกรณ์ซ้ำ');
+      issueByItem.set(issue.item_id, issue);
+    }
+
     const itemReads: Array<{
       ref: any;
       itemSnap: any;
       returnQty: number;
+      issueQty: number;
     }> = [];
 
     for (const bi of reqData.borrow_items || []) {
       const qtyToReturn = bi.approved_qty ?? bi.requested_qty;
+      const issueQty = issueByItem.get(bi.item_id)?.quantity || 0;
+      if (issueQty > qtyToReturn) {
+        throw new Error(`จำนวนที่แจ้งขาดของ ${bi.item?.name || 'อุปกรณ์'} มากกว่าจำนวนที่ยืม`);
+      }
       if (qtyToReturn > 0) {
         const itemRef = doc(db, 'items', bi.item_id);
         const itemSnap = await transaction.get(itemRef);
@@ -308,7 +324,8 @@ export async function returnBorrowRequestTransaction(
           itemReads.push({
             ref: itemRef,
             itemSnap,
-            returnQty: qtyToReturn,
+            returnQty: qtyToReturn - issueQty,
+            issueQty,
           });
         }
       }
@@ -317,12 +334,14 @@ export async function returnBorrowRequestTransaction(
     // Write: Update item inventory
     for (const read of itemReads) {
       const item = read.itemSnap.data() as Item;
+      const newTotal = Math.max(0, item.total_quantity - read.issueQty);
       const newAvailable = Math.min(
-        item.total_quantity,
+        newTotal,
         item.available_quantity + read.returnQty
       );
       transaction.update(read.ref, {
         available_quantity: newAvailable,
+        total_quantity: newTotal,
         updated_at: new Date().toISOString(),
       });
     }
@@ -331,9 +350,22 @@ export async function returnBorrowRequestTransaction(
     transaction.update(reqRef, {
       status: 'returned',
       admin_note: adminNote || reqData.admin_note || null,
+      return_condition: returnIssues.length ? 'incomplete' : 'complete',
+      return_issues: returnIssues,
       updated_at: new Date().toISOString(),
     });
   });
+}
+
+export async function deleteAllBorrowRequests(): Promise<number> {
+  const snapshot = await getDocs(collection(db, 'borrow_requests'));
+  const docs = snapshot.docs;
+  for (let index = 0; index < docs.length; index += 500) {
+    const batch = writeBatch(db);
+    docs.slice(index, index + 500).forEach((requestDoc) => batch.delete(requestDoc.ref));
+    await batch.commit();
+  }
+  return docs.length;
 }
 
 // Cancel Borrow Request (ByUser)
@@ -412,4 +444,3 @@ export async function registerAdminEmail(email: string, userUid?: string): Promi
     throw err;
   }
 }
-

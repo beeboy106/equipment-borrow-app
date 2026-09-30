@@ -59,7 +59,7 @@ export async function POST(req: Request) {
     }
 
     if (!phone || !isValidPhone(phone)) {
-      return NextResponse.json({ error: 'รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง (กรุณากรอก 9-10 หลัก)' }, { status: 400 });
+      return NextResponse.json({ error: 'กรุณากรอกเบอร์โทรศัพท์เป็นตัวเลขเท่านั้น' }, { status: 400 });
     }
 
     if (!purpose || !purpose.trim()) {

@@ -79,15 +79,15 @@ describe('Web Security Utilities (lib/security.ts)', () => {
   });
 
   describe('isValidPhone', () => {
-    it('should accept valid Thai telephone and mobile phone numbers', () => {
-      expect(isValidPhone('081-234-5678')).toBe(true);
+    it('should accept digit-only telephone values without a length restriction', () => {
+      expect(isValidPhone('1')).toBe(true);
       expect(isValidPhone('074288000')).toBe(true);
-      expect(isValidPhone('+66812345678')).toBe(true);
-      expect(isValidPhone('081 234 5678')).toBe(true);
+      expect(isValidPhone('081234567890123456789')).toBe(true);
     });
 
     it('should reject invalid phone strings', () => {
-      expect(isValidPhone('12345')).toBe(false); // too short
+      expect(isValidPhone('081-234-5678')).toBe(false);
+      expect(isValidPhone('081 234 5678')).toBe(false);
       expect(isValidPhone('phone12345678')).toBe(false); // contains letters
       expect(isValidPhone('')).toBe(false);
     });
