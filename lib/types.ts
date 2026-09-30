@@ -38,6 +38,7 @@ export interface ReturnIssue {
   item_id: string;
   type: 'lost' | 'damaged';
   quantity: number;
+  note?: string;
 }
 
 export interface BorrowRequest {

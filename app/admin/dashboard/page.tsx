@@ -615,7 +615,7 @@ export default function AdminDashboardPage() {
             {activeTab === 'requests' ? (
               <>
                 <button onClick={handleExportCSV} className="px-3 sm:px-4 py-2 sm:py-2.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs whitespace-nowrap shrink-0" title="ส่งออกรายการตามตัวกรองปัจจุบัน"><Download className="w-4 h-4 text-slate-500 shrink-0" /><span className="hidden sm:inline">Export CSV</span><span>({filteredRequests.length})</span></button>
-                <button onClick={() => setClearHistoryState({ isOpen: true, loading: false })} className="p-2 sm:px-3 sm:py-2.5 rounded-xl border border-rose-200 bg-white text-rose-600 hover:bg-rose-50 text-xs font-bold transition shrink-0" title="ล้างประวัติการยืมทั้งหมด"><Trash2 className="w-4 h-4" /><span className="hidden sm:inline ml-1">ล้างประวัติ</span></button>
+                <button onClick={() => setClearHistoryState({ isOpen: true, loading: false })} className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl border border-rose-200 bg-white px-3 py-2.5 text-xs font-bold text-rose-600 transition hover:bg-rose-50 whitespace-nowrap" title="ล้างประวัติการยืมทั้งหมด"><Trash2 className="h-4 w-4 shrink-0" /><span>ล้างประวัติ</span></button>
               </>
             ) : (
               <button

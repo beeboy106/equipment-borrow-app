@@ -89,6 +89,17 @@ describe('Firestore borrow-request operations', () => {
     ]));
   });
 
+  it('keeps an optional damage note with the return record', async () => {
+    const updates = mockReturnTransaction();
+    const issue = { item_id: 'item-1', type: 'damaged' as const, quantity: 1, note: 'ด้ามหัก' };
+
+    await returnBorrowRequestTransaction(request.id, [issue]);
+
+    expect(updates).toEqual(expect.arrayContaining([
+      expect.objectContaining({ ref: expect.objectContaining({ collectionName: 'borrow_requests' }), data: expect.objectContaining({ return_issues: [issue] }) }),
+    ]));
+  });
+
   it('rejects an issue quantity greater than the approved quantity', async () => {
     const updates = mockReturnTransaction();
 

@@ -15,27 +15,32 @@ interface Props {
 }
 
 export default function ReturnEquipmentModal({ isOpen, request, isLoading, onClose, onConfirm }: Props) {
-  const [selections, setSelections] = useState<Record<string, { type: IssueType; quantity: number }>>({});
+  const [selections, setSelections] = useState<Record<string, { type: IssueType; quantity: number; note: string }>>({});
 
   useEffect(() => {
     if (!isOpen || !request) return;
-    setSelections(Object.fromEntries((request.borrow_items || []).map((item) => [item.item_id, { type: 'complete', quantity: 0 }])));
+    setSelections(Object.fromEntries((request.borrow_items || []).map((item) => [item.item_id, { type: 'complete', quantity: 0, note: '' }])));
   }, [isOpen, request]);
 
   if (!isOpen || !request) return null;
 
-  const updateSelection = (itemId: string, value: Partial<{ type: IssueType; quantity: number }>) => {
+  const updateSelection = (itemId: string, value: Partial<{ type: IssueType; quantity: number; note: string }>) => {
     setSelections((current) => ({ ...current, [itemId]: { ...current[itemId], ...value } }));
   };
 
   const submit = () => {
     const issues: ReturnIssue[] = [];
     for (const item of request.borrow_items || []) {
-      const selection = selections[item.item_id] || { type: 'complete', quantity: 0 };
+      const selection = selections[item.item_id] || { type: 'complete', quantity: 0, note: '' };
       const borrowed = item.approved_qty ?? item.requested_qty;
       if (selection.type === 'complete') continue;
       if (!Number.isInteger(selection.quantity) || selection.quantity < 1 || selection.quantity > borrowed) return;
-      issues.push({ item_id: item.item_id, type: selection.type, quantity: selection.quantity });
+      issues.push({
+        item_id: item.item_id,
+        type: selection.type,
+        quantity: selection.quantity,
+        ...(selection.type === 'damaged' && selection.note.trim() ? { note: selection.note.trim().slice(0, 500) } : {}),
+      });
     }
     onConfirm(issues);
   };
@@ -58,14 +63,14 @@ export default function ReturnEquipmentModal({ isOpen, request, isLoading, onClo
         </div>
         <div className="space-y-3 p-5 sm:p-6">
           {(request.borrow_items || []).map((item) => {
-            const selection = selections[item.item_id] || { type: 'complete', quantity: 0 };
+            const selection = selections[item.item_id] || { type: 'complete', quantity: 0, note: '' };
             const borrowed = item.approved_qty ?? item.requested_qty;
             return <div key={item.id} className="rounded-2xl border border-slate-200 p-4">
               <div className="mb-3 flex items-center justify-between gap-3"><strong className="text-sm text-slate-900">{item.item?.name || 'อุปกรณ์'}</strong><span className="text-xs font-bold text-indigo-700">ยืม {borrowed} ชิ้น</span></div>
               <div className="grid grid-cols-3 gap-2">
                 {([['complete', 'ครบ'], ['lost', 'สูญหาย'], ['damaged', 'เสียหาย']] as const).map(([type, label]) => <button key={type} type="button" onClick={() => updateSelection(item.item_id, { type, quantity: type === 'complete' ? 0 : selection.quantity || 1 })} className={`rounded-xl border px-2 py-2 text-xs font-bold transition ${selection.type === type ? type === 'complete' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-rose-500 bg-rose-50 text-rose-700' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{label}</button>)}
               </div>
-              {selection.type !== 'complete' ? <div className="mt-3 flex items-center gap-2 text-xs"><AlertTriangle className="h-4 w-4 shrink-0 text-rose-600" /><label className="font-semibold text-slate-700">จำนวน:</label><input type="number" min="1" max={borrowed} value={selection.quantity || ''} onChange={(e) => updateSelection(item.item_id, { quantity: Number(e.target.value) })} className="w-20 rounded-lg border border-slate-300 px-2 py-1.5" /><span className="text-slate-400">จาก {borrowed} ชิ้น</span></div> : null}
+              {selection.type !== 'complete' ? <div className="mt-3 flex flex-col gap-2 text-xs sm:flex-row sm:items-center"><div className="flex items-center gap-2"><AlertTriangle className="h-4 w-4 shrink-0 text-rose-600" /><label className="font-semibold text-slate-700">จำนวน:</label><input type="number" min="1" max={borrowed} value={selection.quantity || ''} onChange={(e) => updateSelection(item.item_id, { quantity: Number(e.target.value) })} className="w-20 rounded-lg border border-slate-300 px-2 py-1.5" /><span className="text-slate-400">จาก {borrowed} ชิ้น</span></div>{selection.type === 'damaged' ? <div className="flex min-w-0 flex-1 items-center gap-2"><label htmlFor={`damage-note-${item.id}`} className="font-semibold text-slate-700 whitespace-nowrap">โน้ต:</label><input id={`damage-note-${item.id}`} type="text" maxLength={500} value={selection.note} onChange={(e) => updateSelection(item.item_id, { note: e.target.value })} placeholder="ระบุรายละเอียดความเสียหาย (ถ้ามี)" className="min-w-0 flex-1 rounded-lg border border-slate-300 px-2 py-1.5" /></div> : null}</div> : null}
             </div>;
           })}
           <p className="rounded-xl bg-slate-50 p-3 text-[11px] text-slate-600"><CheckCircle2 className="mr-1 inline h-4 w-4 text-emerald-600" />รายการที่ครบจะถูกคืนเข้าสต็อก; รายการสูญหายหรือเสียหายจะถูกลดจากยอดรวมคลังถาวร</p>
