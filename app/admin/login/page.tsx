@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { loginWithGoogle, logoutUser } from '@/lib/firebase/authService';
-import { checkIsAdmin, registerAdminEmail } from '@/lib/firebase/firestoreService';
+import { checkIsAdmin } from '@/lib/firebase/firestoreService';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, AlertCircle, KeyRound, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
@@ -53,9 +53,8 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setErrorMsg(null);
 
-    const expectedKey = process.env.NEXT_PUBLIC_ADMIN_REGISTRATION_KEY || 'psu-admin-2026';
-    if (adminKey.trim() !== expectedKey) {
-      setErrorMsg('รหัสความปลอดภัยแอดมิน (Admin Security Key) ไม่ถูกต้อง');
+    if (!adminKey.trim()) {
+      setErrorMsg('กรุณากรอกรหัสความปลอดภัยแอดมิน');
       return;
     }
 
@@ -66,8 +65,19 @@ export default function AdminLoginPage() {
         throw new Error('ไม่พบข้อมูลอีเมลจากบัญชี Google');
       }
 
-      // บันทึกสิทธิ์ Admin ลง Firestore
-      await registerAdminEmail(user.email, user.uid);
+      const idToken = await user.getIdToken();
+      const response = await fetch('/api/admin/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({ securityKey: adminKey.trim() }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(result.error || 'ไม่สามารถลงทะเบียนสิทธิ์ผู้ดูแลได้');
+      }
 
       router.replace('/admin/dashboard');
     } catch (err: any) {
@@ -175,7 +185,7 @@ export default function AdminLoginPage() {
                   autoComplete="off"
                   value={adminKey}
                   onChange={(e) => setAdminKey(e.target.value)}
-                  placeholder="กรอกรหัสยืนยันสิทธิ์ เช่น psu-admin-2026"
+                  placeholder="กรอกรหัสยืนยันสิทธิ์"
                   className="w-full pl-10 pr-10 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none bg-white placeholder-slate-400 text-slate-800 transition"
                 />
                 <button

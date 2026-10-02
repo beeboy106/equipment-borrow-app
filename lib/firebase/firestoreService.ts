@@ -101,7 +101,6 @@ export async function saveItem(
     return newDocRef.id;
   }
 }
-
 export async function deleteItem(itemId: string): Promise<void> {
   await deleteDoc(doc(db, 'items', itemId));
 }
@@ -419,28 +418,5 @@ export async function checkIsAdmin(email: string | null | undefined): Promise<bo
   } catch (err) {
     console.warn('Error checking admin role in Firestore:', err);
     return false;
-  }
-}
-
-/**
- * Grants administrator role to an email address in Firestore 'admins' collection
- */
-export async function registerAdminEmail(email: string, userUid?: string): Promise<void> {
-  if (!email) return;
-  const cleanEmail = email.trim().toLowerCase();
-  try {
-    await setDoc(
-      doc(db, 'admins', cleanEmail),
-      {
-        email: cleanEmail,
-        user_id: userUid || null,
-        created_at: new Date().toISOString(),
-        role: 'admin',
-      },
-      { merge: true }
-    );
-  } catch (err) {
-    console.error('Error registering admin in Firestore:', err);
-    throw err;
   }
 }

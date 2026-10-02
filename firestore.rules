@@ -23,7 +23,7 @@ service cloud.firestore {
     // 0. Admins List
     match /admins/{adminEmail} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated();
+      allow write: if false;
     }
 
     // 1. Items Catalog: Publicly readable, write restricted to admins

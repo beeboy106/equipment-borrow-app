@@ -17,7 +17,7 @@
   - ผู้ใช้สามารถติดตามสถานะการพิจารณาคำขอของตนเองได้แบบสดๆ ที่หน้า `/my-requests` พร้อมฟังก์ชันยกเลิกคำขอที่รอพิจารณา
   - แดชบอร์ดผู้ดูแลระบบ (Admin Dashboard) ครบวงจร: วิเคราะห์สถิติ, อนุมัติคำขอ (ระบุจำนวนที่อนุมัติและเวลานัดรับ), ปฏิเสธคำขอ (ระบุเหตุผล), รับคืนอุปกรณ์พร้อมคืนสต็อกเข้าคลังอัตโนมัติ, ระบบตรวจจับคำขอเกินกำหนดคืน (Overdue)
   - ระบบคัดกรองข้อมูลขั้นสูง: คัดกรองตามสถานะ, กลุ่มผู้ใช้งาน, ระบุเดือน, ระบุวันที่, หรือเลือกช่วงวันที่ (Date Range) และส่งออกประวัติเป็นไฟล์ CSV รองรับภาษาไทย (UTF-8 BOM)
-  - การจัดการคลังอุปกรณ์ (CRUD): เพิ่ม ลบ แก้ไข พร้อมระบบอัปโหลดรูปภาพขึ้น **Firebase Storage**
+  - การจัดการคลังอุปกรณ์ (CRUD): เพิ่ม ลบ แก้ไข พร้อมระบบอัปโหลดรูปภาพขึ้น **Cloudinary**
   - ระบบแจ้งเตือนอีเมลอัตโนมัติผ่าน **Resend API** ส่งตรงถึงเจ้าหน้าที่แอดมินทันทีที่มีคำขอยืมใหม่
   - การยืนยันตัวตนระดับองค์กร (Google OAuth SSO) ทั้งฝั่งผู้ใช้งานทั่วไปและฝั่งผู้ดูแลระบบ (Google SSO + Admin Role Whitelist & Security Key Binding)
 
@@ -29,7 +29,7 @@
 - **Backend & Database**: **Google Firebase**
   - **Firebase Authentication**: Google OAuth Single Sign-On (SSO)
   - **Cloud Firestore**: Real-time NoSQL Database, Security Rules (`firestore.rules`), Firestore Transactions
-  - **Firebase Storage**: จัดเก็บรูปภาพอุปกรณ์คลังจัดเลี้ยง (`items/`)
+  - **Cloudinary**: จัดเก็บรูปภาพอุปกรณ์คลังจัดเลี้ยงผ่าน signed upload
 - **Email Service**: Resend API (`POST /api/send-email`)
 - **State Management**: Zustand (`cartStore`) ผสาน LocalStorage และ React Context (`CartContext`)
 - **Unit Testing**: Vitest 5.0 (ทดสอบความปลอดภัย, Security Sanitization, Rate Limiting, Utility functions)
@@ -69,7 +69,7 @@ equipment-borrow-app/
 │   └── admin/                            # โมดูลฝั่งผู้ดูแลระบบ
 │       ├── StatsCards.tsx                # การ์ดสรุปตัวเลขสถิติภาพรวม
 │       ├── BorrowHistoryTable.tsx        # ตารางและ Mobile Floating Cards แสดงคำขอยืม-คืน พร้อมปุ่ม Action
-│       ├── ItemManagerModal.tsx          # โมดอลเพิ่ม/แก้ไขอุปกรณ์ พร้อมอัปโหลดรูปเข้า Firebase Storage
+│       ├── ItemManagerModal.tsx          # โมดอลเพิ่ม/แก้ไขอุปกรณ์ พร้อมอัปโหลดรูปเข้า Cloudinary
 │       └── ApprovalModal.tsx             # โมดอลพิจารณาอนุมัติ (กำหนดจำนวนและนัดรับ) หรือปฏิเสธคำขอ
 ├── context/
 │   └── CartContext.tsx                   # Cart Context Provider จัดการตะกร้าสินค้าระดับแอป
@@ -107,7 +107,7 @@ equipment-borrow-app/
 ### 4.2 การพิจารณาและรับคืนอุปกรณ์ (Admin Operations)
 1. **การเข้าสู่ระบบแอดมิน**:
    - เข้าสู่ระบบด้วย Google Account ที่ได้รับสิทธิ์ (ตรวจสอบผ่าน Whitelist และคอลเลกชัน `admins`)
-   - บัญชี Google ใหม่สามารถลงทะเบียนรับสิทธิ์ได้ด้วย Admin Security Key (`psu-admin-2026`)
+   - บัญชี Google ใหม่สามารถลงทะเบียนรับสิทธิ์ผ่าน API ฝั่งเซิร์ฟเวอร์ โดยใช้ `ADMIN_REGISTRATION_KEY` และ Firebase Admin SDK; รหัสไม่ถูกส่งไปใน JavaScript ของเบราว์เซอร์หรือเก็บใน Git
 2. **การอนุมัติคำขอ**:
    - เจ้าหน้าที่สามารถระบุ "จำนวนที่อนุมัติจริง" (ปรับลดได้ตามความเหมาะสมของงาน)
    - กำหนด "วันและเวลานัดรับอุปกรณ์" เพื่อให้ผู้ยืมมารับของที่งานบริการกลาง
@@ -131,7 +131,7 @@ equipment-borrow-app/
 - [x] ย้ายระบบฐานข้อมูลและ Authentication จาก Supabase สู่ Google Firebase (Auth, Firestore, Storage) สมบูรณ์แบบ 100%
 - [x] นำโค้ดและ Dependencies ของ Supabase ที่ไม่ได้ใช้ออกทั้งหมด
 - [x] ระบบยืนยันตัวตนระดับองค์กรด้วย Google SSO ทั้งฝั่งผู้ใช้ทั่วไปและแอดมิน
-- [x] ระบบเพิ่มสิทธิ์ผู้ดูแลระบบผ่าน Google Login + Admin Security Key (`psu-admin-2026`)
+- [x] ระบบเพิ่มสิทธิ์ผู้ดูแลระบบผ่าน Google Login + Admin Security Key
 - [x] ปรับปรุงสัดส่วนหน้าจอบนอุปกรณ์มือถือ (Mobile Responsive UI) ให้กระชับ สวยงาม และคงรูปแบบ Desktop 100%
 - [x] ระบบตรวจสอบความถูกต้อง (Validation) ของเบอร์โทรและวัตถุประสงค์ (รองรับเครื่องหมาย `-`) พร้อมบล็อกการบันทึกหากข้อมูลไม่ครบ
 - [x] ระบบแจ้งเตือนทางอีเมลด้วย Resend API และเทมเพลตอีเมล HTML คมชัด
@@ -141,4 +141,6 @@ equipment-borrow-app/
 ## 7. Current State & Pending Tasks
 - [x] Unit tests ครอบคลุมการรับคืนครบ, สูญหาย, เสียหาย, การตรวจจำนวนเกิน และการล้างประวัติเป็นชุดละไม่เกิน 500 รายการ
 - [x] ตรวจ TypeScript และ Vitest หลังเปลี่ยนแปลง
+- [ ] ตั้งค่า Cloudinary API credentials ใน Vercel ก่อนใช้งานอัปโหลดภาพจริง
+- [x] ตั้งค่า `ADMIN_REGISTRATION_KEY` และ Firebase Admin service-account credentials ใน Vercel สำหรับการลงทะเบียนแอดมิน
 - [ ] ทดสอบ UAT บน Firebase Production ด้วยบัญชีผู้ใช้จริงและบัญชีแอดมินจริง: ตรวจสิทธิ์รับคืน/ล้างประวัติ, ยอดคลังหลังคืนครบหรือขาด, ตัวกรอง และไฟล์ CSV

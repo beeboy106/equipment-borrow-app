@@ -31,7 +31,7 @@
 - 🔄 **ระบบรับคืนอุปกรณ์ (Return Equipment)**: บันทึกรับคืนอุปกรณ์พร้อม**คืนสต็อกกลับเข้าคลังอัตโนมัติ**ด้วย Cloud Firestore Atomic Transaction
 - 🔍 **ระบบคัดกรองคำขอขั้นสูง**: คัดกรองตามสถานะ, กลุ่มผู้ใช้งาน, ระบุเดือน, ระบุวันที่, หรือเลือกช่วงวันที่ (Date Range)
 - 📥 **ส่งออกข้อมูล CSV (Excel ภาษาไทย)**: ดาวน์โหลดประวัติการยืม-คืนเป็นไฟล์ Excel พร้อมแนบ UTF-8 BOM แสดงภาษาไทยถูกต้อง 100%
-- 🛠️ **จัดการคลังอุปกรณ์ (CRUD)**: เพิ่ม แก้ไข ลบ อุปกรณ์ พร้อมระบบอัปโหลดรูปภาพเข้า **Firebase Storage**
+- 🛠️ **จัดการคลังอุปกรณ์ (CRUD)**: เพิ่ม แก้ไข ลบ อุปกรณ์ พร้อมระบบอัปโหลดรูปภาพเข้า **Cloudinary**
 - 📱 **Mobile Floating Cards View**: บนหน้าจอมือถือ ตารางคำขอจะปรับเปลี่ยนเป็นการ์ดข้อมูลอิสระ พร้อมระบบคลี่ดูรายละเอียด (Accordion) และปุ่ม Action ชัดเจน
 
 ### 3. ระบบแจ้งเตือนทางอีเมล (Email Notifications)
@@ -47,7 +47,7 @@
 - **Backend & Database**: Google Firebase
   - **Firebase Authentication**: Google OAuth
   - **Cloud Firestore**: Real-time Database with Security Rules & Transactions
-  - **Firebase Storage**: Image Upload Bucket
+- **Image Storage**: Cloudinary (signed upload)
 - **Email Service**: Resend API
 - **State Management**: Zustand, React Context, LocalStorage
 - **Testing**: Vitest
@@ -75,7 +75,6 @@ cp .env.local.example .env.local
 NEXT_PUBLIC_FIREBASE_API_KEY=your-api-key
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=equipment-borrow-4942d.firebaseapp.com
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=equipment-borrow-4942d
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=equipment-borrow-4942d.firebasestorage.app
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
 NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
 NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your-measurement-id
@@ -85,8 +84,17 @@ RESEND_API_KEY=your-resend-api-key
 RESEND_FROM_EMAIL=onboarding@resend.dev
 ADMIN_NOTIFICATION_EMAIL=your-admin-email@gmail.com
 
-# รหัสยืนยันสิทธิ์สร้างบัญชี Admin
-NEXT_PUBLIC_ADMIN_REGISTRATION_KEY=psu-admin-2026
+# รหัสและ Firebase service account ฝั่งเซิร์ฟเวอร์สำหรับลงทะเบียนสิทธิ์ Admin
+# ห้ามใช้ NEXT_PUBLIC_ และห้าม commit ค่าจริงขึ้น Git
+ADMIN_REGISTRATION_KEY=your-secret-admin-registration-key
+FIREBASE_ADMIN_PROJECT_ID=your-project-id
+FIREBASE_ADMIN_CLIENT_EMAIL=firebase-adminsdk@example.iam.gserviceaccount.com
+FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\\n...\\n-----END PRIVATE KEY-----\\n"
+
+# Cloudinary สำหรับอัปโหลดภาพอุปกรณ์ (ห้ามใช้ NEXT_PUBLIC_ หรือ commit ค่าจริง)
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_API_KEY=your-api-key
+CLOUDINARY_API_SECRET=your-api-secret
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 

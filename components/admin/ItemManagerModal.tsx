@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { storage } from '@/lib/firebase/client';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { auth } from '@/lib/firebase/client';
 import { saveItem } from '@/lib/firebase/firestoreService';
 import { Item } from '@/lib/types';
 import { X, Upload, Package, AlertCircle } from 'lucide-react';
@@ -59,6 +58,15 @@ export default function ItemManagerModal({
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      if (!file.type.startsWith('image/')) {
+        setErrorMsg('กรุณาเลือกไฟล์รูปภาพเท่านั้น');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        setErrorMsg('รูปภาพต้องมีขนาดไม่เกิน 5 MB');
+        return;
+      }
+      setErrorMsg(null);
       setImageFile(file);
       setPreviewUrl(URL.createObjectURL(file));
     }
@@ -72,16 +80,39 @@ export default function ItemManagerModal({
     try {
       let finalImageUrl = imageUrl;
 
-      // 1. อัปโหลดรูปภาพไปยัง Firebase Storage หากมีการเลือกไฟล์
+      // 1. อัปโหลดรูปภาพไปยัง Cloudinary หากมีการเลือกไฟล์
       if (imageFile) {
         try {
-          const fileExt = imageFile.name.split('.').pop();
-          const fileName = `items/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-          const storageRef = ref(storage, fileName);
-          await uploadBytes(storageRef, imageFile);
-          finalImageUrl = await getDownloadURL(storageRef);
+          const idToken = await auth.currentUser?.getIdToken();
+          if (!idToken) throw new Error('กรุณาเข้าสู่ระบบแอดมินก่อนอัปโหลดรูปภาพ');
+
+          const signatureResponse = await fetch('/api/admin/cloudinary-signature', {
+            headers: { Authorization: `Bearer ${idToken}` },
+          });
+          const signatureData = await signatureResponse.json().catch(() => ({}));
+          if (!signatureResponse.ok) {
+            throw new Error(signatureData.error || 'ไม่สามารถยืนยันสิทธิ์อัปโหลดรูปภาพได้');
+          }
+
+          const uploadData = new FormData();
+          uploadData.append('file', imageFile);
+          uploadData.append('api_key', signatureData.apiKey);
+          uploadData.append('timestamp', String(signatureData.timestamp));
+          uploadData.append('signature', signatureData.signature);
+          uploadData.append('folder', signatureData.folder);
+
+          const uploadResponse = await fetch(
+            `https://api.cloudinary.com/v1_1/${signatureData.cloudName}/image/upload`,
+            { method: 'POST', body: uploadData }
+          );
+          const uploadResult = await uploadResponse.json().catch(() => ({}));
+          if (!uploadResponse.ok || !uploadResult.secure_url) {
+            throw new Error(uploadResult.error?.message || 'ไม่สามารถอัปโหลดรูปภาพไปยัง Cloudinary ได้');
+          }
+          finalImageUrl = uploadResult.secure_url;
         } catch (uploadErr: any) {
-          console.warn('Firebase Storage upload failed, proceeding with image data or fallback:', uploadErr);
+          console.error('Cloudinary upload failed:', uploadErr);
+          throw new Error(uploadErr?.message || 'ไม่สามารถอัปโหลดรูปภาพไปยัง Cloudinary ได้');
         }
       }
 
@@ -223,7 +254,7 @@ export default function ItemManagerModal({
           {/* Image Upload Area */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              รูปภาพอุปกรณ์ (Firebase Storage)
+              รูปภาพอุปกรณ์ (Cloudinary)
             </label>
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-2xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center flex-shrink-0">
@@ -243,7 +274,7 @@ export default function ItemManagerModal({
                   onChange={handleImageChange}
                   className="hidden"
                 />
-                <p className="text-[11px] text-slate-400 mt-1">รองรับไฟล์ JPG, PNG, WebP</p>
+                <p className="text-[11px] text-slate-400 mt-1">รองรับไฟล์ JPG, PNG, WebP ขนาดไม่เกิน 5 MB</p>
               </label>
             </div>
           </div>
