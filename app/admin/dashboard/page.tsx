@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { subscribeAuth, logoutUser } from '@/lib/firebase/authService';
 import {
   fetchItems as getItemsFromFirestore,
@@ -114,6 +114,7 @@ export default function AdminDashboardPage() {
     loading: false,
   });
   const [clearHistoryState, setClearHistoryState] = useState({ isOpen: false, loading: false });
+  const legacyMigrationAttempted = useRef(false);
 
   const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
 
@@ -138,6 +139,25 @@ export default function AdminDashboardPage() {
       }
 
       setIsAuthorized(true);
+      if (!legacyMigrationAttempted.current) {
+        legacyMigrationAttempted.current = true;
+        try {
+          const idToken = await user.getIdToken();
+          const response = await fetch('/api/admin/migrate-borrow-request-owners', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${idToken}` },
+          });
+          const result = await response.json().catch(() => ({}));
+          if (response.ok && result.migrated > 0) {
+            showToast('success', `เชื่อมประวัติคำขอยืมเดิมกับบัญชีผู้ใช้แล้ว ${result.migrated} รายการ`, 'ย้ายข้อมูลสำเร็จ');
+          }
+          if (response.ok && result.unmatched > 0) {
+            showToast('warning', `มีประวัติเดิม ${result.unmatched} รายการที่ไม่พบบัญชี Firebase ของผู้ยืม`, 'ย้ายข้อมูลไม่ครบ');
+          }
+        } catch (error) {
+          console.error('Legacy borrow request migration failed:', error);
+        }
+      }
       await loadAllData();
     });
 

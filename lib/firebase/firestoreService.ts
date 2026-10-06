@@ -133,11 +133,11 @@ export async function fetchBorrowRequests(): Promise<BorrowRequest[]> {
   }
 }
 
-export async function fetchUserRequests(userEmail: string): Promise<BorrowRequest[]> {
+export async function fetchUserRequests(userId: string): Promise<BorrowRequest[]> {
   try {
     const q = query(
       collection(db, 'borrow_requests'),
-      where('borrower_email', '==', userEmail)
+      where('user_id', '==', userId)
     );
     const snapshot = await getDocs(q);
     const list = snapshot.docs.map((docSnap) => ({

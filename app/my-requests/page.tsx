@@ -55,10 +55,10 @@ export default function MyRequestsPage() {
     loading: false,
   });
 
-  const loadRequestsForEmail = useCallback(async (email: string) => {
+  const loadRequestsForUser = useCallback(async (userId: string) => {
     setLoading(true);
     try {
-      const data = await fetchUserRequests(email);
+      const data = await fetchUserRequests(userId);
       setRequests(data);
     } catch (err) {
       console.error('Error fetching user requests:', err);
@@ -80,17 +80,13 @@ export default function MyRequestsPage() {
 
       setIsAuthenticated(true);
       setUser(currentUser);
-      if (currentUser.email) {
-        await loadRequestsForEmail(currentUser.email);
-      } else {
-        setLoading(false);
-      }
+      await loadRequestsForUser(currentUser.uid);
     });
 
     return () => {
       unsubscribe();
     };
-  }, [loadRequestsForEmail, router]);
+  }, [loadRequestsForUser, router]);
 
   const handleGoogleLogin = async () => {
     try {
@@ -124,8 +120,8 @@ export default function MyRequestsPage() {
 
       showToast('success', 'ยกเลิกคำขอยืมอุปกรณ์เรียบร้อยแล้ว', 'ยกเลิกสำเร็จ');
       setCancelModalState({ isOpen: false, request: null, loading: false });
-      if (user?.email) {
-        await loadRequestsForEmail(user.email);
+      if (user?.uid) {
+        await loadRequestsForUser(user.uid);
       }
     } catch (err: any) {
       console.error('Cancel request error:', err);

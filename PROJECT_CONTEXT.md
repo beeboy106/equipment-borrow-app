@@ -141,6 +141,7 @@ equipment-borrow-app/
 ## 7. Current State & Pending Tasks
 - [x] Unit tests ครอบคลุมการรับคืนครบ, สูญหาย, เสียหาย, การตรวจจำนวนเกิน และการล้างประวัติเป็นชุดละไม่เกิน 500 รายการ
 - [x] ตรวจ TypeScript และ Vitest หลังเปลี่ยนแปลง
+- [ ] เปิด Admin Dashboard หนึ่งครั้งหลัง deploy เพื่อย้ายคำขอยืมเก่าที่ไม่มี `user_id` ไปผูกกับบัญชี Firebase ตามอีเมลผู้ยืม
 - [ ] ตั้งค่า Cloudinary API credentials ใน Vercel ก่อนใช้งานอัปโหลดภาพจริง
 - [x] ตั้งค่า `ADMIN_REGISTRATION_KEY` และ Firebase Admin service-account credentials ใน Vercel สำหรับการลงทะเบียนแอดมิน
 - [ ] ทดสอบ UAT บน Firebase Production ด้วยบัญชีผู้ใช้จริงและบัญชีแอดมินจริง: ตรวจสิทธิ์รับคืน/ล้างประวัติ, ยอดคลังหลังคืนครบหรือขาด, ตัวกรอง และไฟล์ CSV
